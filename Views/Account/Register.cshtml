@@ -1,63 +1,62 @@
 @model BHX_Web.ViewModels.RegisterViewModel
 @{
     ViewData["Title"] = "Đăng ký tài khoản";
-    Layout = "_Layout"; // Sử dụng Layout chung (hoặc _Layout_Customer nếu muốn)
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container mt-5" style="max-width: 550px;">
+    <div class="card shadow">
+        <div class="card-body p-4">
+            <h3 class="text-center mb-3">Đăng ký tài khoản</h3>
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Register" method="post">
+            <form asp-action="Register" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
 
-            <h4>Tạo tài khoản mới.</h4>
-            <hr />
+                <div class="form-group mb-3">
+                    <label class="form-label">Tên đăng nhập</label>
+                    <input asp-for="Username" class="form-control" />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
 
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Email (không bắt buộc)</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
 
-            <div class="form-group">
-                <label asp-for="FullName" class="control-label">Họ và Tên</label>
-                <input asp-for="FullName" class="form-control" />
-                <span asp-validation-for="FullName" class="text-danger"></span>
-            </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Mật khẩu</label>
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
 
-            <div class="form-group">
-                <label asp-for="Username" class="control-label">Tên đăng nhập</label>
-                <input asp-for="Username" class="form-control" />
-                <span asp-validation-for="Username" class="text-danger"></span>
-            </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Xác nhận mật khẩu</label>
+                    <input asp-for="ConfirmPassword" class="form-control" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
 
-            <div class="form-group">
-                <label asp-for="Email" class="control-label">Email</label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Họ Tên</label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
 
-            <div class="form-group">
-                <label asp-for="Password" class="control-label">Mật khẩu</label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Số điện thoại</label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
 
-            <div class="form-group">
-                <label asp-for="ConfirmPassword" class="control-label">Xác nhận mật khẩu</label>
-                <input asp-for="ConfirmPassword" class="form-control" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
+                <button type="submit" class="btn btn-success w-100">Đăng ký</button>
 
-            <br />
-
-            <div classs="form-group">
-                <button type="submit" class="btn btn-primary">Đăng ký</button>
-                <a asp-action="Login" class="btn btn-link">Đã có tài khoản? Đăng nhập</a>
-            </div>
-        </form>
+                <div class="text-center mt-3">
+                    <a asp-action="Login">Đã có tài khoản? Đăng nhập</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-@* Kích hoạt validation phía client (nếu bạn đã thêm script trong _Layout) *@
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
 }

@@ -9,14 +9,11 @@ namespace BHX_Web.Models.Entities
         [Key]
         public int RoleID { get; set; }
 
-        [Required(ErrorMessage = "Tên vai trò là bắt buộc")]
-        [StringLength(50)]
+        [Required]
+        [StringLength(100)]
         public string RoleName { get; set; } = string.Empty;
 
-        [StringLength(200)]
-        public string? Description { get; set; } // Cho phép NULL
-
-        // Quan hệ: Một Role có nhiều UserRoles
+        // Khởi tạo List rỗng để tránh lỗi Null Reference khi gọi Roles.UserRoles
         public virtual ICollection<UserRoles> UserRoles { get; set; } = new List<UserRoles>();
     }
 }

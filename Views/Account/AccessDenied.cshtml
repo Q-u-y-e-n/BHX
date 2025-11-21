@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Truy cập bị từ chối";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="height: 60vh;">
+    <div class="text-center">
+        <h1 class="display-1 fw-bold text-danger">403</h1>
+        <h2 class="mb-3 text-danger"> <i class="fa-solid fa-triangle-exclamation"></i> TRUY CẬP BỊ TỪ CHỐI</h2>
+        <p class="lead mb-4">
+            Xin lỗi, tài khoản của bạn không có quyền truy cập vào khu vực này.
+        </p>
+
+        <div class="d-flex justify-content-center gap-3">
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="btn btn-outline-danger">
+                    Đăng xuất & Thử lại
+                </button>
+            </form>
+
+            <a asp-controller="Home" asp-action="Index" asp-area="" class="btn btn-primary">
+                Về Trang Chủ
+            </a>
+        </div>
+    </div>
+</div>

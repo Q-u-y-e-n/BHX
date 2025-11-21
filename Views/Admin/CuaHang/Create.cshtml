@@ -1,0 +1,86 @@
+@model BHX_Web.ViewModels.CreateStoreViewModel
+
+@{
+    ViewData["Title"] = "Thêm Cửa Hàng & Tài Khoản";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow border-0">
+            <div class="card-header bg-success text-white py-3">
+                <h5 class="mb-0"><i class="fa-solid fa-store"></i> Thêm Điểm Bán Lẻ & Tài Khoản Quản Lý</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 border-end">
+                            <h6 class="text-success fw-bold mb-3 border-bottom pb-2">1. Thông tin Cửa Hàng</h6>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tên Cửa Hàng <span
+                                        class="text-danger">*</span></label>
+                                <input asp-for="TenCuaHang" class="form-control"
+                                    placeholder="VD: Bách Hóa Xanh - Quận 1" />
+                                <span asp-validation-for="TenCuaHang" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Địa Chỉ <span class="text-danger">*</span></label>
+                                <input asp-for="DiaChi" class="form-control"
+                                    placeholder="Số nhà, đường, phường, quận..." />
+                                <span asp-validation-for="DiaChi" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Hotline Cửa Hàng</label>
+                                <input asp-for="SoDienThoai" class="form-control" placeholder="028..." />
+                                <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 ps-md-4">
+                            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">2. Tài khoản Quản Lý (Store)</h6>
+
+                            <div class="alert alert-light border small text-muted">
+                                <i class="fa-solid fa-info-circle"></i> Tài khoản này sẽ được cấp quyền
+                                <strong>Store</strong> và tự động liên kết với cửa hàng bên cạnh.
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tên Đăng Nhập <span
+                                        class="text-danger">*</span></label>
+                                <input asp-for="Username" class="form-control" placeholder="VD: store_quan1" />
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Mật Khẩu <span class="text-danger">*</span></label>
+                                <input asp-for="Password" type="password" class="form-control"
+                                    placeholder="Nhập mật khẩu..." />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-success px-4 fw-bold">
+                            <i class="fa-solid fa-floppy-disk"></i> Hoàn Tất & Tạo Mới
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

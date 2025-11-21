@@ -7,7 +7,7 @@ namespace BHX_Web.Data
     {
         public BHXContext(DbContextOptions<BHXContext> options) : base(options) { }
 
-        // ----- DANH SÁCH BẢNG NGHIỆP VỤ (CŨ CỦA BẠN) -----
+        // ===== DANH SÁCH BẢNG NGHIỆP VỤ =====
         public DbSet<CuaHang> CuaHangs { get; set; }
         public DbSet<NhaCungCap> NhaCungCaps { get; set; }
         public DbSet<SanPham> SanPhams { get; set; }
@@ -32,17 +32,16 @@ namespace BHX_Web.Data
         public DbSet<DonHang> DonHangs { get; set; }
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
 
-        // ===== THÊM 3 BẢNG PHÂN QUYỀN MỚI =====
+        // ===== BẢNG PHÂN QUYỀN =====
         public DbSet<Users> Users { get; set; }
         public DbSet<Roles> Roles { get; set; }
         public DbSet<UserRoles> UserRoles { get; set; }
-        // ======================================
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // ----- CẤU HÌNH .ToTable() CŨ CỦA BẠN -----
+            // ===== CẤU HÌNH TÊN BẢNG =====
             modelBuilder.Entity<PhieuNhap_Tong>().ToTable("PhieuNhap_Tong");
             modelBuilder.Entity<ChiTietNhap_Tong>().ToTable("ChiTietNhap_Tong");
             modelBuilder.Entity<BanHang_TongHop>().ToTable("BanHang_TongHop");
@@ -59,12 +58,11 @@ namespace BHX_Web.Data
             modelBuilder.Entity<ChiTietHoaDon>().ToTable("ChiTietHoaDon");
             modelBuilder.Entity<ChiTietDonHang>().ToTable("ChiTietDonHang");
 
-            // ===== THÊM CẤU HÌNH CHO CÁC BẢNG MỚI =====
             modelBuilder.Entity<Users>().ToTable("Users");
             modelBuilder.Entity<Roles>().ToTable("Roles");
             modelBuilder.Entity<UserRoles>().ToTable("UserRoles");
 
-            // Cấu hình ràng buộc UNIQUE (vì bạn đã định nghĩa trong SQL)
+            // ===== UNIQUE INDEX =====
             modelBuilder.Entity<Users>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
@@ -73,18 +71,21 @@ namespace BHX_Web.Data
                 .HasIndex(r => r.RoleName)
                 .IsUnique();
 
-            // Cấu hình quan hệ nhiều-nhiều giữa Users và Roles
-            // thông qua bảng UserRoles
+            // ===== QUAN HỆ NHIỀU-NHIỀU USERS-ROLES =====
+            modelBuilder.Entity<UserRoles>()
+                .HasKey(ur => ur.UserRoleID);
+
             modelBuilder.Entity<UserRoles>()
                 .HasOne(ur => ur.User)
                 .WithMany(u => u.UserRoles)
-                .HasForeignKey(ur => ur.UserID);
+                .HasForeignKey(ur => ur.UserID)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<UserRoles>()
                 .HasOne(ur => ur.Role)
                 .WithMany(r => r.UserRoles)
-                .HasForeignKey(ur => ur.RoleID);
-            // ==========================================
+                .HasForeignKey(ur => ur.RoleID)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

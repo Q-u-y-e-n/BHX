@@ -1,8 +1,62 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
+    // Tự động dùng _Layout.cshtml (Views/Shared/_Layout.cshtml)
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid bg-light p-5 mb-4 rounded-3">
+    <div class="row text-center">
+        <h1 class="display-4">Chào mừng đến với Bách Hóa Xanh</h1>
+        <p class="lead">Nơi mua sắm các sản phẩm tươi ngon, an toàn với giá cả hợp lý mỗi ngày.</p>
+
+        <a class="btn btn-primary btn-lg" asp-area="Customer" asp-controller="SanPham" asp-action="Index">Mua sắm
+            ngay</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <h2 class="text-center mb-4">Sản Phẩm Nổi Bật</h2>
+
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+
+                <div class="card-body">
+                    <h5 class="card-title">Rau củ tươi</h5>
+                    <p class="card-text">Rau sạch trồng theo tiêu chuẩn VietGAP, đảm bảo an toàn.</p>
+                    <a asp-area="Customer" asp-controller="SanPham" asp-action="Index"
+                        class="btn btn-outline-primary">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+
+
+                [Image of fresh fruit]
+
+                <div class="card-body">
+                    <h5 class="card-title">Trái cây nhập khẩu</h5>
+                    <p class="card-text">Nho, táo, cam nhập khẩu trực tiếp, giữ trọn vị tươi ngon.</p>
+                    <a asp-area="Customer" asp-controller="SanPham" asp-action="Index"
+                        class="btn btn-outline-primary">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+
+
+                [Image of fresh meat]
+
+                <div class="card-body">
+                    <h5 class="card-title">Thịt sạch 3F</h5>
+                    <p class="card-text">Thịt heo, bò, gà tươi sống, truy xuất nguồn gốc rõ ràng.</p>
+                    <a asp-area="Customer" asp-controller="SanPham" asp-action="Index"
+                        class="btn btn-outline-primary">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

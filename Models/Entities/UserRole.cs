@@ -9,14 +9,14 @@ namespace BHX_Web.Models.Entities
         [Key]
         public int UserRoleID { get; set; }
 
-        // Khóa ngoại tới Bảng Users
         public int UserID { get; set; }
-        [ForeignKey("UserID")]
-        public virtual Users User { get; set; } = null!; // <--- SỬA Ở ĐÂY
 
-        // Khóa ngoại tới Bảng Roles
+        [ForeignKey("UserID")]
+        public virtual Users User { get; set; } = null!; // Bỏ qua cảnh báo null
+
         public int RoleID { get; set; }
+
         [ForeignKey("RoleID")]
-        public virtual Roles Role { get; set; } = null!; // <--- SỬA Ở ĐÂY
+        public virtual Roles Role { get; set; } = null!; // Bỏ qua cảnh báo null
     }
 }

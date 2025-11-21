@@ -1,0 +1,60 @@
+@model BHX_Web.Models.Entities.CuaHang
+
+@{
+    ViewData["Title"] = "Sửa Cửa Hàng";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="fa-solid fa-pen"></i> Cập Nhật Thông Tin</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit">
+                    <input type="hidden" asp-for="CuaHangID" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên Cửa Hàng</label>
+                        <input asp-for="TenCuaHang" class="form-control" required />
+                        <span asp-validation-for="TenCuaHang" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Địa Chỉ</label>
+                        <input asp-for="DiaChi" class="form-control" required />
+                        <span asp-validation-for="DiaChi" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số Điện Thoại</label>
+                        <input asp-for="SoDienThoai" class="form-control" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Trạng Thái</label>
+                        <select asp-for="TrangThai" class="form-select">
+                            <option value="Hoạt động">Hoạt động</option>
+                            <option value="Tạm ngừng">Tạm ngừng</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a asp-action="Index" class="btn btn-secondary me-2">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary px-4"><i class="fa-solid fa-check"></i> Cập
+                            Nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

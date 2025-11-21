@@ -1,0 +1,94 @@
+@model IEnumerable<BHX_Web.Models.Entities.CuaHang>
+
+@{
+    ViewData["Title"] = "Quản lý Cửa Hàng";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml"; // Đảm bảo dùng Layout Admin bạn vừa sửa
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-success"><i class="fa-solid fa-store"></i> Danh sách Điểm Bán Lẻ</h2>
+    <a asp-action="Create" class="btn btn-success shadow-sm">
+        <i class="fa-solid fa-plus"></i> Thêm Cửa Hàng Mới
+    </a>
+</div>
+
+<form asp-action="Index" method="get" class="mb-4">
+    <div class="input-group shadow-sm">
+        <input type="text" name="searchString" class="form-control" placeholder="Tìm theo tên cửa hàng hoặc địa chỉ..."
+            value="@ViewData["CurrentFilter"]">
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm</button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="bg-light text-dark">
+                    <tr>
+                        <th class="ps-3">ID</th>
+                        <th>Tên Cửa Hàng</th>
+                        <th>Địa Chỉ</th>
+                        <th>Số Điện Thoại</th>
+                        <th class="text-center">Trạng Thái</th>
+                        <th class="text-end pe-3">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-3 fw-bold text-secondary">#@item.CuaHangID</td>
+                                <td class="fw-bold text-primary">@item.TenCuaHang</td>
+                                <td>@item.DiaChi</td>
+                                <td>@item.SoDienThoai</td>
+                                <td class="text-center">
+                                    @if (item.TrangThai == "Hoạt động")
+                                    {
+                                        <span class="badge bg-success rounded-pill">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary rounded-pill">Tạm ngừng</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a asp-action="Edit" asp-route-id="@item.CuaHangID"
+                                        class="btn btn-sm btn-warning text-white me-1" title="Sửa">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+
+                                    <form asp-action="ToggleStatus" asp-route-id="@item.CuaHangID" method="post"
+                                        class="d-inline"
+                                        onsubmit="return confirm('Bạn có chắc muốn đổi trạng thái cửa hàng này?');">
+                                        @if (item.TrangThai == "Hoạt động")
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Ngừng hoạt động"><i
+                                                    class="fa-solid fa-lock"></i></button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-success" title="Kích hoạt lại"><i
+                                                    class="fa-solid fa-unlock"></i></button>
+                                        }
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                <i class="fa-regular fa-folder-open fa-2x mb-2"></i><br />
+                                Chưa có dữ liệu cửa hàng nào.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Liên hệ";
+    // Tự động dùng _Layout.cshtml
+}
+
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-5">Liên Hệ Với Chúng Tôi</h1>
+        <p class="lead">Chúng tôi luôn sẵn sàng lắng nghe bạn. Xin vui lòng để lại thông tin hoặc liên hệ trực tiếp.</p>
+    </div>
+
+    <hr class="my-5">
+
+    <div class="row">
+        <div class="col-md-5">
+            <h3>Thông tin liên hệ</h3>
+            <p>
+                <strong>Địa chỉ:</strong> Tòa nhà MWG, Lô T2-1.2, Đường D1, Khu Công nghệ cao, P. Tân Phú, Q.9, TP.HCM
+            </p>
+            <p>
+                <strong>Tổng đài (miễn phí):</strong> 1900.1908
+            </p>
+            <p>
+                <strong>Email:</strong> cskh@bachhoaxanh.com
+            </p>
+            <p>
+                <strong>Giờ làm việc:</strong> 7:00 - 21:30 (Kể cả Chủ Nhật và ngày lễ)
+            </p>
+            <div class="mt-4">
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <h3>Gửi phản hồi cho chúng tôi</h3>
+            <form action="#" method="post">
+                <div class="mb-3">
+                    <label for="contactName" class="form-label">Họ và Tên</label>
+                    <input type="text" class="form-control" id="contactName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="contactEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="contactEmail" required>
+                </div>
+                <div class="mb-3">
+                    <label for="contactSubject" class="form-label">Chủ đề</label>
+                    <input type="text" class="form-control" id="contactSubject">
+                </div>
+                <div class="mb-3">
+                    <label for="contactMessage" class="form-label">Nội dung</label>
+                    <textarea class="form-control" id="contactMessage" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Gửi tin nhắn</button>
+            </form>
+        </div>
+    </div>
+</div>

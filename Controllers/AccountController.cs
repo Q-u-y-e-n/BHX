@@ -1,11 +1,13 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 using BHX_Web.Data;
 using BHX_Web.Models.Entities;
 using BHX_Web.ViewModels;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace BHX_Web.Controllers
 {
@@ -18,182 +20,233 @@ namespace BHX_Web.Controllers
             _context = context;
         }
 
-        // ---------- ĐĂNG NHẬP ----------
-
+        // ==========================================
+        // 1. ĐĂNG NHẬP (LOGIN)
+        // ==========================================
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
-            // Nếu đã đăng nhập thì về trang chủ
-            if (User.Identity?.IsAuthenticated == true)
+            // Nếu đã đăng nhập -> chuyển hướng theo quyền luôn
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectByRole(User.FindFirstValue(ClaimTypes.Role));
             }
+
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(model);
+
+            // [QUAN TRỌNG] Hash mật khẩu bằng UNICODE để khớp với SQL Server (HASHBYTES)
+            byte[] inputHash;
+            using (var sha256 = SHA256.Create())
             {
-                // 1. Tìm User trong DB
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == model.Username && u.IsActive);
-
-                if (user == null)
-                {
-                    ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc mật khẩu không đúng.");
-                    return View(model);
-                }
-
-                // 2. Kiểm tra Mật khẩu (Sử dụng BCrypt)
-                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
-
-                if (isPasswordValid)
-                {
-                    // 3. Lấy Role của User
-                    var userRole = await _context.UserRoles
-                        .Include(ur => ur.Role) // Join với bảng Roles
-                        .Where(ur => ur.UserID == user.UserID)
-                        .Select(ur => ur.Role.RoleName) // Chỉ lấy RoleName
-                        .FirstOrDefaultAsync();
-
-                    if (string.IsNullOrEmpty(userRole))
-                    {
-                        ModelState.AddModelError(string.Empty, "Tài khoản chưa được gán vai trò.");
-                        return View(model);
-                    }
-
-                    // 4. Tạo "Claims" (Thông tin định danh)
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, user.Username),
-                        new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
-                        new Claim("FullName", user.FullName ?? ""),
-                        new Claim(ClaimTypes.Role, userRole) // <<-- GÁN ROLE VÀO ĐÂY
-                    };
-
-                    // 5. Tạo "ClaimsIdentity" và "Principal"
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = true, // Tùy chọn: "Ghi nhớ tôi"
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60)
-                    };
-
-                    // 6. Đăng nhập (Tạo Cookie)
-                    await HttpContext.SignInAsync(
-                        CookieAuthenticationDefaults.AuthenticationScheme,
-                        new ClaimsPrincipal(claimsIdentity),
-                        authProperties);
-
-                    // 7. PHÂN QUYỀN CHUYỂN HƯỚNG
-                    // Đây chính là logic bạn yêu cầu
-                    return RedirectToRole(userRole);
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc mật khẩu không đúng.");
-                    return View(model);
-                }
+                inputHash = sha256.ComputeHash(Encoding.Unicode.GetBytes(model.Password));
             }
-            return View(model);
-        }
 
-        // Hàm hỗ trợ chuyển hướng
-        private IActionResult RedirectToRole(string role)
-        {
-            switch (role)
+            // Tìm User & Role (Include bảng UserRoles và Roles để lấy quyền)
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.Username == model.Username);
+
+            // Kiểm tra tài khoản tồn tại
+            if (user == null)
             {
-                case "Admin":
-                    // Chuyển hướng đến Area "Admin", Controller "Home", Action "Index"
-                    return RedirectToAction("Index", "Home", new { area = "Admin" });
-                case "Store":
-                    // Chuyển hướng đến Area "Store", Controller "Home", Action "Index"
-                    return RedirectToAction("Index", "Home", new { area = "Store" });
-                case "Customer":
-                    // Chuyển hướng về trang chủ (hoặc trang Customer)
-                    return RedirectToAction("Index", "Home", new { area = "Customer" });
-                default:
-                    // Mặc định về trang chủ
-                    return RedirectToAction("Index", "Home");
+                ModelState.AddModelError("", "Tên đăng nhập không tồn tại.");
+                return View(model);
             }
+
+            // Kiểm tra trạng thái
+            if (user.TrangThai != "Hoạt động")
+            {
+                ModelState.AddModelError("", "Tài khoản đã bị khóa hoặc tạm ngưng.");
+                return View(model);
+            }
+
+            // So sánh mật khẩu (So sánh từng byte trong mảng hash)
+            if (!user.PasswordHash.SequenceEqual(inputHash))
+            {
+                ModelState.AddModelError("", "Mật khẩu không chính xác.");
+                return View(model);
+            }
+
+            // --- ĐĂNG NHẬP THÀNH CÔNG ---
+
+            // 1. Lấy tên Role từ DB (Nếu không có role nào thì gán mặc định là Customer)
+            var roleName = user.UserRoles.FirstOrDefault()?.Role?.RoleName ?? "Customer";
+
+            // 2. Tạo danh sách Claims (Thông tin định danh)
+            var claims = new List<Claim>
+{
+    // Thêm ?? "" để đảm bảo không bao giờ null
+    new Claim(ClaimTypes.Name, user.Username ?? ""), 
+    
+    // Nếu HoTen null thì lấy Username, nếu Username cũng null thì lấy chuỗi "User"
+    new Claim(ClaimTypes.GivenName, user.HoTen ?? user.Username ?? "User"), 
+    
+    // RoleName chắc chắn có giá trị do logic phía trên, nhưng thêm ?? cho chắc
+    new Claim(ClaimTypes.Role, roleName ?? "Customer"),
+    
+    // UserID là int nên ToString() an toàn, nhưng cẩn thận thì cứ để nguyên
+    new Claim("UserID", user.UserID.ToString())
+};
+
+            // [MỚI] 3. Nếu là tài khoản Cửa Hàng -> Lưu CuaHangID vào Cookie luôn
+            // Giúp hệ thống biết user này quản lý cửa hàng nào ngay lập tức
+            if (user.CuaHangID != null)
+            {
+                // ToString() của int? có thể trả về null, thêm ?? "" cho chắc chắn
+                claims.Add(new Claim("CuaHangID", user.CuaHangID.ToString() ?? ""));
+            }
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = model.RememberMe, // Ghi nhớ đăng nhập
+                ExpiresUtc = model.RememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddMinutes(60)
+            };
+
+            // 4. Ghi Cookie vào trình duyệt
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties
+            );
+
+            // 5. Điều hướng về trang cũ nếu có (ví dụ link copy)
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            // 6. Điều hướng theo quyền
+            return RedirectByRole(roleName);
         }
 
-        // ---------- ĐĂNG XUẤT ----------
-        [HttpGet]
-        public async Task<IActionResult> Logout()
-        {
-            // Xóa cookie
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Account");
-        }
-
-        // ---------- TRANG CẤM TRUY CẬP ----------
-        [HttpGet]
-        public IActionResult AccessDenied()
-        {
-            return View(); // Tạo một View AccessDenied.cshtml đơn giản
-        }
-
-
-        // ---------- (TÙY CHỌN) ĐĂNG KÝ (Tạo tài khoản) ----------
-        // Dùng để tạo tài khoản (ví dụ: tạo tài khoản Customer)
-
+        // ==========================================
+        // 2. ĐĂNG KÝ (REGISTER)
+        // ==========================================
         [HttpGet]
         public IActionResult Register()
         {
-            return View();
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+                return RedirectByRole(User.FindFirstValue(ClaimTypes.Role));
+
+            return View(new RegisterViewModel());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(model);
+
+            // Kiểm tra trùng tên đăng nhập
+            if (await _context.Users.AnyAsync(u => u.Username == model.Username))
             {
-                // 1. Kiểm tra Username đã tồn tại chưa
-                if (await _context.Users.AnyAsync(u => u.Username == model.Username))
-                {
-                    ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại.");
-                    return View(model);
-                }
+                ModelState.AddModelError("Username", "Tên đăng nhập đã được sử dụng.");
+                return View(model);
+            }
 
-                // 2. Băm mật khẩu (Sử dụng BCrypt)
-                string passwordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+            // Hash mật khẩu bằng UNICODE
+            byte[] passwordHash;
+            using (var sha256 = SHA256.Create())
+            {
+                passwordHash = sha256.ComputeHash(Encoding.Unicode.GetBytes(model.Password));
+            }
 
-                // 3. Tạo User mới
-                var newUser = new Users
-                {
-                    Username = model.Username,
-                    PasswordHash = passwordHash,
-                    Email = model.Email,
-                    FullName = model.FullName,
-                    IsActive = true
-                };
+            // Tạo đối tượng User mới
+            var newUser = new Users
+            {
+                Username = model.Username,
+                PasswordHash = passwordHash,
+                HoTen = model.FullName,
+                SoDienThoai = model.PhoneNumber,
+                LoaiTaiKhoan = "Customer", // Mặc định là Khách hàng
+                TrangThai = "Hoạt động",
+                CuaHangID = null // Khách hàng không quản lý cửa hàng
+            };
 
+            try
+            {
                 _context.Users.Add(newUser);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // Lưu để sinh UserID
 
-                // 4. Gán Role "Customer" (Mặc định)
-                // (Bạn cần đảm bảo Role "Customer" có trong bảng Roles)
-                var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer");
-                if (customerRole != null)
+                // Tìm Role "Customer" trong DB để gán
+                var roleCustomer = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer");
+
+                if (roleCustomer != null)
                 {
-                    var userRole = new UserRoles
+                    _context.UserRoles.Add(new UserRoles
                     {
                         UserID = newUser.UserID,
-                        RoleID = customerRole.RoleID
-                    };
-                    _context.UserRoles.Add(userRole);
+                        RoleID = roleCustomer.RoleID
+                    });
                     await _context.SaveChangesAsync();
                 }
 
-                // Chuyển về trang đăng nhập
-                return RedirectToAction("Login", "Account");
+                TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                return RedirectToAction("Login");
             }
-            return View(model);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Lỗi hệ thống: " + ex.Message);
+                return View(model);
+            }
+        }
+
+        // ==========================================
+        // 3. LOGOUT (ĐĂNG XUẤT)
+        // ==========================================
+        public async Task<IActionResult> Logout()
+        {
+            // Xóa Cookie xác thực
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Xóa Session (Giỏ hàng, dữ liệu tạm...)
+            HttpContext.Session.Clear();
+
+            // Chuyển về trang chủ chung (Public) - Area rỗng
+            return RedirectToAction("Index", "Home", new { area = "" });
+        }
+
+        // Trang báo lỗi khi không đủ quyền truy cập (403)
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        // ==========================================
+        // 4. HÀM ĐIỀU HƯỚNG THÔNG MINH
+        // ==========================================
+        private IActionResult RedirectByRole(string? role)
+        {
+            // Nếu không có role -> Về trang khách
+            if (string.IsNullOrEmpty(role))
+                return RedirectToAction("Index", "Home", new { area = "Customer" });
+
+            // Chuẩn hóa chuỗi về chữ thường, cắt khoảng trắng
+            string r = role.Trim().ToLower();
+
+            // So sánh với các Role chuẩn tiếng Anh (Admin, Store, Customer)
+            if (r == "admin")
+            {
+                return RedirectToAction("Index", "Home", new { area = "Admin" });
+            }
+
+            if (r == "store")
+            {
+                return RedirectToAction("Index", "Home", new { area = "Store" });
+            }
+
+            // Mặc định về Customer
+            return RedirectToAction("Index", "Home", new { area = "Customer" });
         }
     }
 }

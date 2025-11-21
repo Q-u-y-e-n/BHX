@@ -1,0 +1,211 @@
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Quản Trị BHX</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body {
+            overflow-x: hidden;
+            background-color: #f4f6f9;
+        }
+
+        #wrapper {
+            display: flex;
+        }
+
+        /* Sidebar */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 250px;
+            margin-left: 0;
+            background-color: #343a40;
+            /* Màu tối chuyên nghiệp */
+            transition: margin .25s ease-out;
+        }
+
+        #sidebar-wrapper .sidebar-heading {
+            padding: 1rem 1.5rem;
+            font-size: 1.2rem;
+            color: #fff;
+            background-color: #008848;
+            /* Màu Xanh BHX */
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #sidebar-wrapper .list-group {
+            width: 250px;
+        }
+
+        #sidebar-wrapper .list-group-item {
+            background-color: #343a40;
+            color: #cfd8dc;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+
+        #sidebar-wrapper .list-group-item:hover {
+            background-color: #495057;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        #sidebar-wrapper .list-group-item.active {
+            background-color: #008848;
+            /* Highlight màu xanh */
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Page Content */
+        #page-content-wrapper {
+            width: 100%;
+        }
+
+        .navbar {
+            padding: 10px 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="d-flex" id="wrapper">
+
+        <div class="border-end" id="sidebar-wrapper">
+            <div class="sidebar-heading"><i class="fa-solid fa-leaf"></i> ADMIN BHX</div>
+            <div class="list-group list-group-flush">
+
+                <a asp-area="Admin" asp-controller="Home" asp-action="Index"
+                    class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-gauge me-2"></i> Tổng Quan
+                </a>
+
+                <div class="p-2 text-muted small text-uppercase fw-bold ps-4 mt-2">Quản lý Kho & Hàng</div>
+
+                <a asp-area="Admin" asp-controller="KhoTong" asp-action="Index"
+                    class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-warehouse me-2"></i> Kho Tổng
+                </a>
+                <a asp-area="Admin" asp-controller="PhieuNhap" asp-action="Index"
+                    class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-truck-ramp-box me-2"></i> Nhập Hàng NCC
+                </a>
+                <a asp-area="Admin" asp-controller="PhanPhoi" asp-action="Index"
+                    class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-dolly me-2"></i> Phân Phối Store
+                </a>
+
+                <div class="p-2 text-muted small text-uppercase fw-bold ps-4 mt-2">Hệ Thống</div>
+
+                <a asp-area="Admin" asp-controller="CuaHang" asp-action="Index"
+                    class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-store me-2"></i> DS Cửa Hàng
+                </a>
+                <a asp-area="Admin" asp-controller="HangTraVe" asp-action="Index"
+                    class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-rotate-left me-2"></i> Hàng Trả Về
+                </a>
+                <a asp-area="Admin" asp-controller="ThongKe" asp-action="Index"
+                    class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-chart-column me-2"></i> Báo Cáo Thống Kê
+                </a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-outline-success" id="sidebarToggle">
+                        <i class="fa-solid fa-bars"></i> Menu
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ms-auto mt-2 mt-lg-0 align-items-center">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="navbarDropdown"
+                                        role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa-solid fa-user-tie me-1"></i>
+                                        @(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value ??
+                                                                            User.Identity.Name)
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="#">Hồ sơ cá nhân</a>
+                                        <a class="dropdown-item" href="#">Cài đặt</a>
+                                        <div class="dropdown-divider"></div>
+                                        <form class="dropdown-item p-0" asp-area="" asp-controller="Account"
+                                            asp-action="Logout" method="post">
+                                            <button type="submit"
+                                                class="btn btn-link text-danger text-decoration-none w-100 text-start px-3">
+                                                <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                                            </button>
+                                        </form>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        @RenderBody()
+                    </div>
+                </div>
+            </div>
+
+            <footer class="text-center py-3 text-muted border-top bg-white">
+                <small>&copy; 2025 - Hệ thống quản lý Bách Hóa Xanh - Phiên bản Admin</small>
+            </footer>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', event => {
+            const sidebarToggle = document.body.querySelector('#sidebarToggle');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', event => {
+                    event.preventDefault();
+                    document.body.classList.toggle('sb-sidenav-toggled');
+                    const sidebar = document.getElementById('sidebar-wrapper');
+                    if (sidebar.style.marginLeft === '-250px') {
+                        sidebar.style.marginLeft = '0';
+                    } else {
+                        sidebar.style.marginLeft = '-250px';
+                    }
+                });
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>
