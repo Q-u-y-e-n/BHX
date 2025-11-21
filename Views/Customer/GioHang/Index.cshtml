@@ -1,0 +1,189 @@
+@model List<BHX_Web.ViewModels.GioHangItem>
+
+@{
+    ViewData["Title"] = "Giỏ Hàng Của Bạn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <h2 class="fw-bold text-success mb-4">
+        <i class="fa-solid fa-cart-shopping"></i> Giỏ Hàng Của Bạn
+    </h2>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="row">
+            <div class="col-lg-8 col-md-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead class="bg-light text-uppercase small fw-bold">
+                                    <tr>
+                                        <th class="ps-4" style="min-width: 250px;">Sản Phẩm</th>
+                                        <th class="text-center">Giá</th>
+                                        <th class="text-center" style="width: 160px;">Số Lượng</th>
+                                        <th class="text-end pe-4">Thành Tiền</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="@(string.IsNullOrEmpty(item.HinhAnh) ? "/images/no-image.png" : item.HinhAnh)"
+                                                        alt="@item.TenSanPham" class="rounded border me-3"
+                                                        style="width: 70px; height: 70px; object-fit: cover;">
+                                                    <div>
+                                                        <h6 class="mb-1 fw-bold text-dark">@item.TenSanPham</h6>
+                                                        <small class="text-muted">Mã SP: #@item.SanPhamID</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td class="text-center">
+                                                @string.Format("{0:N0}₫", item.DonGia)
+                                            </td>
+
+                                            <td class="text-center">
+                                                <form asp-action="UpdateCart" method="post">
+                                                    <input type="hidden" name="id" value="@item.SanPhamID" />
+
+                                                    <div class="input-group input-group-sm justify-content-center">
+                                                        <button type="submit" name="quantity" value="@(item.SoLuong - 1)"
+                                                            class="btn btn-outline-secondary">
+                                                            <i class="fa-solid fa-minus"></i>
+                                                        </button>
+
+                                                        <input type="text" value="@item.SoLuong"
+                                                            class="form-control text-center fw-bold bg-white border-secondary"
+                                                            style="max-width: 50px;" readonly />
+
+                                                        <button type="submit" name="quantity" value="@(item.SoLuong + 1)"
+                                                            class="btn btn-outline-secondary">
+                                                            <i class="fa-solid fa-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </td>
+
+                                            <td class="text-end pe-4 fw-bold text-primary">
+                                                @string.Format("{0:N0}₫", item.ThanhTien)
+                                            </td>
+
+                                            <td class="text-center">
+                                                <a asp-action="Remove" asp-route-id="@item.SanPhamID"
+                                                    class="text-danger btn btn-link p-0" title="Xóa"
+                                                    onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?');">
+                                                    <i class="fa-regular fa-trash-can fa-lg"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-success fw-bold">
+                            <i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
+                        </a>
+                        <a asp-action="Clear" class="text-danger text-decoration-none fw-bold small"
+                            onclick="return confirm('Bạn có chắc muốn xóa tất cả giỏ hàng?');">
+                            <i class="fa-solid fa-xmark"></i> Xóa tất cả
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 90px; z-index: 1;">
+                    <div class="card-header bg-success text-white fw-bold text-uppercase py-3">
+                        <i class="fa-solid fa-receipt me-2"></i> Thông Tin Đơn Hàng
+                    </div>
+                    <div class="card-body bg-light">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tạm tính:</span>
+                            <span class="fw-bold">@string.Format("{0:N0}₫", ViewBag.TongTien)</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 text-success">
+                            <span>Giảm giá:</span>
+                            <span>0₫</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-4 align-items-center">
+                            <span class="h6 fw-bold mb-0">Tổng cộng:</span>
+                            <span class="h4 fw-bold text-danger mb-0">@string.Format("{0:N0}₫", ViewBag.TongTien)</span>
+                        </div>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-action="Checkout"
+                                class="btn btn-danger w-100 py-3 fw-bold text-uppercase shadow pulse-button">
+                                TIẾN HÀNH THANH TOÁN <i class="fa-solid fa-arrow-right ms-2"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning small mb-3 border-warning">
+                                <i class="fa-solid fa-circle-info"></i> Bạn cần đăng nhập để tích điểm và thanh toán.
+                            </div>
+                            <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="/Customer/GioHang"
+                                class="btn btn-primary w-100 fw-bold py-2">
+                                <i class="fa-solid fa-user"></i> ĐĂNG NHẬP NGAY
+                            </a>
+                        }
+                    </div>
+                    <div class="card-footer bg-white text-center text-muted small py-3">
+                        <i class="fa-solid fa-shield-halved text-success"></i> Cam kết bảo mật thông tin khách hàng
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 bg-white rounded shadow-sm">
+            <img src="https://cdn-icons-png.flaticon.com/512/11329/11329060.png" alt="Empty Cart"
+                style="width: 150px; opacity: 0.6;">
+            <h4 class="mt-4 text-muted fw-bold">Giỏ hàng của bạn đang trống!</h4>
+            <p class="text-muted mb-4">Hãy dạo một vòng siêu thị và chọn những món đồ yêu thích nhé.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-success px-5 py-2 fw-bold rounded-pill shadow-sm">
+                <i class="fa-solid fa-shop me-2"></i> MUA SẮM NGAY
+            </a>
+        </div>
+    }
+</div>
+
+<style>
+    /* Hiệu ứng nút thanh toán đập nhẹ thu hút sự chú ý */
+    .pulse-button {
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+        }
+    }
+
+    /* Chỉnh lại input group để đẹp hơn */
+    .input-group .form-control {
+        border-color: #6c757d;
+    }
+
+    .input-group .btn {
+        z-index: 0;
+        /* Tránh bị đè border */
+    }
+</style>

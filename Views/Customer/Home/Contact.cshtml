@@ -1,0 +1,62 @@
+@{
+    ViewData["Title"] = "Liên Hệ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-5">
+            <h3 class="text-success fw-bold mb-4">Thông Tin Liên Hệ</h3>
+            <div class="d-flex mb-4">
+                <div class="me-3 text-success"><i class="fa-solid fa-location-dot fa-2x"></i></div>
+                <div>
+                    <h5 class="fw-bold">Trụ sở chính</h5>
+                    <p>128 Trần Quang Khải, P. Tân Định, Q.1, TP.HCM</p>
+                </div>
+            </div>
+            <div class="d-flex mb-4">
+                <div class="me-3 text-success"><i class="fa-solid fa-phone fa-2x"></i></div>
+                <div>
+                    <h5 class="fw-bold">Hotline mua hàng</h5>
+                    <p class="fs-5 fw-bold text-danger">1900 1900</p>
+                </div>
+            </div>
+            <div class="d-flex mb-4">
+                <div class="me-3 text-success"><i class="fa-solid fa-envelope fa-2x"></i></div>
+                <div>
+                    <h5 class="fw-bold">Email hỗ trợ</h5>
+                    <p>cskh@bachhoaxanh.com</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h4 class="mb-3">Gửi thắc mắc cho chúng tôi</h4>
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Họ và tên</label>
+                            <input type="text" class="form-control" placeholder="Nhập họ tên của bạn">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" placeholder="email@example.com">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control" placeholder="09xxxxxxx">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nội dung</label>
+                            <textarea class="form-control" rows="4" placeholder="Bạn cần hỗ trợ gì?"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold">GỬI LIÊN HỆ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

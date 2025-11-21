@@ -1,72 +1,174 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="vi">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Bách Hóa Xanh</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - Bách Hóa Xanh Online</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 70px;
+            /* Tránh bị menu che mất nội dung */
+        }
+
+        /* Style cho Menu */
+        .navbar {
+            background-color: #fff !important;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            color: #008848 !important;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #333 !important;
+            margin-right: 10px;
+            transition: 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #008848 !important;
+        }
+
+        .nav-link.active {
+            color: #008848 !important;
+        }
+
+        /* Style cho nút tìm kiếm */
+        .search-box input {
+            border-radius: 20px 0 0 20px;
+            border: 1px solid #008848;
+        }
+
+        .search-box button {
+            border-radius: 0 20px 20px 0;
+            background-color: #008848;
+            color: white;
+            border: 1px solid #008848;
+        }
+
+        .search-box button:hover {
+            background-color: #006636;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #fff;
+            margin-top: auto;
+            border-top: 1px solid #dee2e6;
+        }
+
+        footer a {
+            text-decoration: none;
+            color: #666;
+            transition: 0.2s;
+        }
+
+        footer a:hover {
+            color: #008848;
+        }
+    </style>
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
+
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-light border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Bách Hóa Xanh</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm fixed-top">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" asp-area="Customer" asp-controller="Home"
+                    asp-action="Index">
+                    <i class="fa-solid fa-leaf me-2"></i> BÁCH HÓA XANH
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <div class="collapse navbar-collapse" id="navbarMain">
 
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Trang
+                            <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="Index">Trang
                                 Chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="Customer" asp-controller="SanPham"
-                                asp-action="Index">Sản Phẩm</a>
+                            <a class="nav-link" asp-area="Customer" asp-controller="SanPham" asp-action="Index">Sản
+                                Phẩm</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About">Giới
+                            <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="About">Giới
                                 Thiệu</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Contact">Liên
+                            <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="Contact">Liên
                                 Hệ</a>
                         </li>
                     </ul>
 
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="Customer" asp-controller="GioHang"
-                                asp-action="Index">Giỏ Hàng</a>
+                    <form class="d-flex me-4 search-box" asp-area="Customer" asp-controller="SanPham" asp-action="Index"
+                        method="get">
+                        <input class="form-control shadow-none" type="search" name="searchString"
+                            placeholder="Bạn tìm gì..." aria-label="Search">
+                        <button class="btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+
+                    <ul class="navbar-nav align-items-center">
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-success fs-5 position-relative" asp-area="Customer"
+                                asp-controller="GioHang" asp-action="Index">
+                                <i class="fa-solid fa-cart-shopping"></i> Giỏ hàng
+                            </a>
                         </li>
 
-                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item">
-                                <span class="nav-link text-primary">Xin chào, @User.Identity.Name</span>
-                            </li>
-                            <li class="nav-item">
-                                <form class="d-inline" asp-controller="Account" asp-action="Logout" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="nav-link btn btn-link text-success p-0">Đăng xuất</button>
-                                </form>
+                            var fullName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.Identity.Name;
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle fw-bold" href="#" id="userDropdown" role="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-regular fa-circle-user me-1"></i> @fullName
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" asp-area="Customer" asp-controller="DonHang"
+                                            asp-action="Index">Đơn hàng của tôi</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <form class="d-inline" asp-area="" asp-controller="Account" asp-action="Logout"
+                                            method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-primary" asp-area="" asp-controller="Account"
-                                    asp-action="Login">Đăng nhập</a>
+                                <a class="nav-link fw-bold" asp-area="" asp-controller="Account" asp-action="Login">Đăng
+                                    nhập</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-success" asp-area="" asp-controller="Account"
-                                    asp-action="Register">Đăng ký</a>
+                                <span class="text-muted mx-1">|</span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-bold" asp-area="" asp-controller="Account" asp-action="Register">Đăng
+                                    ký</a>
                             </li>
                         }
                     </ul>
@@ -76,19 +178,61 @@
     </header>
 
     <div class="container">
-        <main role="main" class="pb-3">
+        <main role="main" class="pb-5">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="bg-white border-top pt-5 pb-3 mt-auto">
         <div class="container">
-            &copy; 2025 - BHX_Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5 class="text-success fw-bold mb-3">BÁCH HÓA XANH</h5>
+                    <p class="small text-muted">
+                        100% Hàng tươi ngon. Nguồn gốc rõ ràng. Giao hàng nhanh chóng.
+                    </p>
+                    <div>
+                        <a href="#" class="me-3 text-primary"><i class="fa-brands fa-facebook fa-lg"></i></a>
+                        <a href="#" class="me-3 text-danger"><i class="fa-brands fa-youtube fa-lg"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-md-2 col-6 mb-3">
+                    <h6 class="fw-bold mb-3">Về chúng tôi</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="#">Giới thiệu</a></li>
+                        <li class="mb-2"><a href="#">Tuyển dụng</a></li>
+                        <li class="mb-2"><a href="#">Chính sách</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-2 col-6 mb-3">
+                    <h6 class="fw-bold mb-3">Hỗ trợ</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="#">Hướng dẫn mua hàng</a></li>
+                        <li class="mb-2"><a href="#">Giao nhận</a></li>
+                        <li class="mb-2"><a href="#">Đổi trả</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="fw-bold mb-3">Liên hệ</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><i class="fa-solid fa-phone text-success me-2"></i> <strong>1900.1908</strong>
+                            (7:00 - 21:00)</li>
+                        <li class="mb-2"><i class="fa-solid fa-envelope text-success me-2"></i> cskh@bachhoaxanh.com
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center border-top pt-3 mt-3 small text-muted">
+                &copy; 2025 - Hệ thống Bách Hóa Xanh Online
+            </div>
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -60,6 +60,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ3VhSGFuZ1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Admin/DeXuatAdmin/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGVYdWF0QWRtaW5cRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Admin/DeXuatAdmin/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGVYdWF0QWRtaW5cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Admin/HangTraVe/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cSGFuZ1RyYVZlXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -82,6 +90,14 @@ build_metadata.AdditionalFiles.CssScope =
 
 [E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Admin/KhoTong/ChiTiet.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cS2hvVG9uZ1xDaGlUaWV0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Admin/KhoTong/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cS2hvVG9uZ1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Admin/KhoTong/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cS2hvVG9uZ1xFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Admin/KhoTong/Index.cshtml]
@@ -152,6 +168,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJcR2lvSGFuZ1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Customer/Home/About.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJcSG9tZVxBYm91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Customer/Home/Contact.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJcSG9tZVxDb250YWN0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Customer/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -212,8 +236,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Store/DeXuatNhap/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmVcRGVYdWF0TmhhcFxDcmVhdGUuY3NodG1s
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Store/BanHang/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmVcQmFuSGFuZ1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Store/DeXuatNhap/AutoSuggest.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmVcRGVYdWF0TmhhcFxBdXRvU3VnZ2VzdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Store/DeXuatNhap/CreateManual.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmVcRGVYdWF0TmhhcFxDcmVhdGVNYW51YWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Store/DeXuatNhap/Details.cshtml]
@@ -252,8 +284,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmVcS2hvQ3VhSGFuZ1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Store/NhanHang/ChiTietPhanPhoi.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmVcTmhhbkhhbmdcQ2hpVGlldFBoYW5QaG9pLmNzaHRtbA==
+[E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Store/NhanHang/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmVcTmhhbkhhbmdcRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/chuyendulieu/hk1_nam4_25-26/QLDA PM/web_BHX_CK/BHX_Web/Views/Store/NhanHang/Index.cshtml]

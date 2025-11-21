@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,12 +13,16 @@ namespace BHX_Web.Models.Entities
 
         public DateTime NgayDeXuat { get; set; } = DateTime.Now;
 
-        [MaxLength(50)]
-        public string? TrangThai { get; set; }
+        [StringLength(50)]
+        public string? TrangThai { get; set; } // Chờ duyệt, Đã duyệt, Từ chối
 
-        [ForeignKey(nameof(CuaHangID))]
-        public CuaHang? CuaHang { get; set; }
+        // Navigation
+        [ForeignKey("CuaHangID")]
+        public virtual CuaHang? CuaHang { get; set; }
 
-        public ICollection<ChiTietDeXuatNhap>? ChiTietDeXuatNhaps { get; set; }
+        // 👇👇👇 SỬA DÒNG NÀY 👇👇👇
+        // 1. Bỏ dấu '?'
+        // 2. Thêm '= new List<ChiTietDeXuatNhap>();'
+        public virtual ICollection<ChiTietDeXuatNhap> ChiTietDeXuatNhaps { get; set; } = new List<ChiTietDeXuatNhap>();
     }
 }

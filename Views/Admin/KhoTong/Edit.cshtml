@@ -1,0 +1,118 @@
+@model BHX_Web.ViewModels.SanPhamViewModel
+
+@{
+    ViewData["Title"] = "Cập Nhật Sản Phẩm";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fa-solid fa-pen-to-square"></i> Cập Nhật Thông Tin & Tồn Kho</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="SanPhamID" />
+                    <input type="hidden" name="id" value="@ViewBag.KhoTongID" />
+
+                    <div class="row">
+                        <div class="col-md-4 text-center border-end">
+                            <label class="form-label fw-bold mb-3">Ảnh Hiện Tại</label>
+                            <div class="mb-3 position-relative text-center">
+                                <img id="imgPreview"
+                                    src="@(string.IsNullOrEmpty(Model.HinhAnhHienTai) ? "wwwroot/images/no-image.png" : Model.HinhAnhHienTai)"
+                                    class="img-thumbnail shadow-sm"
+                                    style="width: 100%; height: 250px; object-fit: contain; border-radius: 10px;"
+                                    onerror="this.onerror=null; this.src='wwwroot/images/no-image.png'; alert('Lỗi tải ảnh: ' + this.src);" />
+
+
+                            </div>
+
+                            <label class="btn btn-primary w-100 fw-bold">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Đổi Ảnh Khác
+                                <input asp-for="HinhAnhFile" type="file" hidden accept="image/*"
+                                    onchange="previewImage(this)" />
+                            </label>
+                        </div>
+
+                        <div class="col-md-8 ps-md-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold">Chi tiết sản phẩm</h6>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tên Sản Phẩm</label>
+                                <input asp-for="TenSanPham" class="form-control fw-bold text-primary" />
+                                <span asp-validation-for="TenSanPham" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Nhóm Hàng</label>
+                                    <input asp-for="LoaiSanPham" class="form-control" list="datalistOptions"
+                                        placeholder="Chọn hoặc nhập mới..." />
+                                    <datalist id="datalistOptions">
+                                        <option value="Thực phẩm tươi" />
+                                        <option value="Đồ khô" />
+                                        <option value="Đồ uống" />
+                                        <option value="Bánh kẹo" />
+                                        <option value="Hóa mỹ phẩm" />
+                                    </datalist>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Đơn Vị Tính</label>
+                                    <input asp-for="DonViTinh" class="form-control" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Giá Nhập</label>
+                                    <input asp-for="GiaNhap" class="form-control" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Giá Bán</label>
+                                    <input asp-for="GiaBan" class="form-control" />
+                                </div>
+                            </div>
+
+                            <div class="card bg-light border-warning mt-3">
+                                <div class="card-body">
+                                    <label class="form-label fw-bold text-dark"><i class="fa-solid fa-box-open"></i>
+                                        Điều chỉnh Tồn Kho (Kiểm kê)</label>
+                                    <div class="input-group">
+                                        <input asp-for="SoLuong" type="number"
+                                            class="form-control form-control-lg fw-bold text-danger text-center" />
+                                        <span class="input-group-text bg-white fw-bold">Sản phẩm</span>
+                                    </div>
+                                    <div class="form-text text-muted fst-italic">
+                                        Chỉ sửa số này khi kiểm kê kho thấy sai lệch với thực tế.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="mt-4" />
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                        <button type="submit" class="btn btn-primary px-5 fw-bold">
+                            <i class="fa-solid fa-check"></i> Cập Nhật
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('imgPreview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>

@@ -1,0 +1,108 @@
+@model BHX_Web.Models.Entities.DanhSachTraHang
+
+@{
+    ViewData["Title"] = "Xử lý phiếu trả";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h2 class="text-primary fw-bold">Xử Lý Phiếu Trả #@Model.TraHangID</h2>
+        <a asp-action="Index" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white py-3">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Cửa Hàng:</strong> <span class="text-primary">@Model.CuaHang?.TenCuaHang</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong>Ngày Gửi:</strong> @Model.NgayTra.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead class="bg-dark text-white">
+                            <tr>
+                                <th class="ps-4">Sản Phẩm</th>
+                                <th class="text-center">Số Lượng</th>
+                                <th>Lý Do Trả</th>
+                                <th class="text-end pe-4">Giá Trị (Ước tính)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ChiTietTraHangs)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold">@item.SanPham?.TenSanPham</td>
+                                    <td class="text-center text-danger fw-bold">@item.SoLuong</td>
+                                    <td>@item.LyDo</td>
+                                    <td class="text-end pe-4">
+                                        @string.Format("{0:N0} đ", item.SoLuong * (item.SanPham?.GiaNhap ?? 0))
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="bg-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold pt-3">Tổng Giá Trị Lô Hàng:</td>
+                                <td class="text-end fw-bold text-danger fs-5 pe-4 pt-3">
+                                    @string.Format("{0:N0} đ", ViewBag.UocTinhGiaTri)
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white fw-bold">
+                    <i class="fa-solid fa-gavel"></i> Quyết Định Xử Lý
+                </div>
+                <div class="card-body text-center">
+                    @if (Model.TrangThai == "Chờ duyệt")
+                    {
+                        <p class="text-muted mb-4">Vui lòng kiểm tra kỹ tình trạng hàng hóa thực tế trước khi ra quyết định.
+                        </p>
+
+                        <div class="d-grid gap-3">
+                            <form asp-action="Destroy" method="post">
+                                <input type="hidden" name="id" value="@Model.TraHangID" />
+                                <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold"
+                                    onclick="return confirm('Xác nhận TIÊU HỦY lô hàng này? Giá trị sẽ được ghi nhận vào thiệt hại.');">
+                                    <i class="fa-solid fa-dumpster-fire"></i> TIÊU HỦY (HẾT HẠN)
+                                </button>
+                                <div class="form-text text-danger">Chọn khi hàng hết hạn, hư hỏng không thể tái sử dụng.
+                                </div>
+                            </form>
+
+                            <hr />
+
+                            <form asp-action="Approve" method="post">
+                                <input type="hidden" name="id" value="@Model.TraHangID" />
+                                <button type="submit" class="btn btn-outline-success w-100"
+                                    onclick="return confirm('Xác nhận thu hồi về kho?');">
+                                    <i class="fa-solid fa-box-archive"></i> Thu Hồi Về Kho
+                                </button>
+                                <div class="form-text">Chọn khi hàng trả về do bán chậm hoặc điều chuyển.</div>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-secondary mb-0">
+                            Phiếu này đã được xử lý.<br />
+                            <strong>Kết quả:</strong> @Model.TrangThai
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

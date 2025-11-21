@@ -1,0 +1,70 @@
+@model IEnumerable<BHX_Web.Models.Entities.DeXuatNhapHang>
+
+@{
+    ViewData["Title"] = "Lịch sử đề xuất";
+    Layout = "~/Views/Shared/_Layout_Store.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex gap-2">
+        <a asp-action="CreateManual" class="btn btn-primary shadow-sm fw-bold">
+            <i class="fa-solid fa-pen"></i> Tạo Thủ Công
+        </a>
+
+        <a asp-action="AutoSuggest" class="btn btn-warning text-dark shadow-sm fw-bold">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Quét Tự Động (<10) </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Mã Phiếu</th>
+                        <th>Ngày Gửi</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-secondary">#@item.DeXuatID</td>
+                                <td>@item.NgayDeXuat.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (item.TrangThai == "Chờ duyệt")
+                                    {
+                                        <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                    }
+                                    else if (item.TrangThai == "Đã duyệt")
+                                    {
+                                        <span class="badge bg-success">Đã duyệt</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Từ chối</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="Details" asp-route-id="@item.DeXuatID"
+                                        class="btn btn-sm btn-info text-white">
+                                        <i class="fa-solid fa-eye"></i> Xem
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">Chưa có đề xuất nào.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,106 @@
+@model BHX_Web.Models.Entities.DeXuatNhapHang
+
+@{
+    ViewData["Title"] = "Chi Tiết Đề Xuất";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h2 class="text-info fw-bold">Chi Tiết Đề Xuất #@Model.DeXuatID</h2>
+        <a asp-action="Index" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white py-3">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Cửa Hàng:</strong> <span
+                                class="text-primary fw-bold">@Model.CuaHang?.TenCuaHang</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong>Ngày Gửi:</strong> @Model.NgayDeXuat.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead class="bg-dark text-white">
+                            <tr>
+                                <th class="ps-4">Sản Phẩm</th>
+                                <th class="text-center">SL Yêu Cầu</th>
+                                <th class="text-center">Tồn Kho Tổng</th>
+                                <th class="text-center">Khả Thi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ChiTietDeXuatNhaps)
+                            {
+                                // Lấy tồn kho từ ViewData controller gửi sang
+                                int tonKhoTong = (int)(ViewData[$"TonKho_{item.SanPhamID}"] ?? 0);
+                                bool duHang = tonKhoTong >= item.SoLuong;
+
+                                <tr>
+                                    <td class="ps-4 fw-bold">@item.SanPham?.TenSanPham</td>
+                                    <td class="text-center fw-bold fs-5 text-primary">@item.SoLuong</td>
+                                    <td class="text-center fw-bold fs-5">@tonKhoTong</td>
+                                    <td class="text-center">
+                                        @if (duHang)
+                                        {
+                                            <i class="fa-solid fa-check-circle text-success" title="Đủ hàng"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fa-solid fa-circle-xmark text-danger" title="Thiếu hàng"></i>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow border-warning">
+                <div class="card-header bg-warning text-dark fw-bold">
+                    <i class="fa-solid fa-gavel"></i> Phê Duyệt Yêu Cầu
+                </div>
+                <div class="card-body text-center">
+                    @if (Model.TrangThai == "Chờ duyệt")
+                    {
+                        <p>Hành động duyệt sẽ tự động tạo <strong>Phiếu Phân Phối</strong> và trừ kho tổng.</p>
+
+                        <div class="d-grid gap-2">
+                            <form asp-action="Approve" method="post">
+                                <input type="hidden" name="id" value="@Model.DeXuatID" />
+                                <button type="submit" class="btn btn-success btn-lg w-100 fw-bold"
+                                    onclick="return confirm('Xác nhận duyệt và xuất kho?');">
+                                    <i class="fa-solid fa-check"></i> DUYỆT & XUẤT KHO
+                                </button>
+                            </form>
+
+                            <form asp-action="Reject" method="post">
+                                <input type="hidden" name="id" value="@Model.DeXuatID" />
+                                <button type="submit" class="btn btn-danger w-100"
+                                    onclick="return confirm('Xác nhận từ chối?');">
+                                    <i class="fa-solid fa-xmark"></i> Từ Chối
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-secondary mb-0">
+                            Yêu cầu này đã được xử lý.<br />
+                            <strong>Trạng thái:</strong> @Model.TrangThai
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,82 @@
+@model IEnumerable<BHX_Web.Models.Entities.PhieuPhanPhoi>
+
+@{
+    ViewData["Title"] = "Quản lý Phân Phối";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h2 class="text-info fw-bold"><i class="fa-solid fa-dolly"></i> Danh Sách Phân Phối</h2>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="fa-solid fa-plus"></i> Tạo Phiếu Phân Phối
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Mã Phiếu</th>
+                        <th>Cửa Hàng Nhận</th>
+                        <th>Ngày Tạo</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-center">Tác vụ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold ps-3">#@item.PhieuPhanPhoiID</td>
+                                <td class="fw-bold text-primary">
+                                    @(item.CuaHang?.TenCuaHang ?? "Không xác định")
+                                </td>
+                                <td>@item.NgayTao.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (item.TrangThai == "Đang giao")
+                                    {
+                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-truck-fast"></i> Đang
+                                            giao</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success"><i class="fa-solid fa-check"></i> Đã nhận</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="Details" asp-route-id="@item.PhieuPhanPhoiID"
+                                        class="btn btn-sm btn-info text-white" title="Xem chi tiết">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+
+                                    @if (item.TrangThai == "Đang giao")
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@item.PhieuPhanPhoiID" method="post"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Hủy phiếu này sẽ hoàn trả hàng về kho tổng. Chắc chắn?');">
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Hủy phiếu"><i
+                                                    class="fa-solid fa-trash"></i></button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fa-solid fa-box-open fa-2x mb-2"></i><br />
+                                Chưa có phiếu phân phối nào.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,9 +16,12 @@ namespace BHX_Web.Models.Entities
         [Column(TypeName = "decimal(18,2)")]
         public decimal TongTien { get; set; }
 
-        [ForeignKey(nameof(NhaCungCapID))]
-        public NhaCungCap? NhaCungCap { get; set; }
+        // Navigation Properties
+        [ForeignKey("NhaCungCapID")]
+        public virtual NhaCungCap? NhaCungCap { get; set; }
 
-        public ICollection<ChiTietNhap_Tong>? ChiTietNhapTongs { get; set; }
+        // 👇 SỬA Ở ĐÂY: Bỏ dấu '?' và thêm '= new List...();'
+        // Điều này giúp sửa lỗi CS8620 trong Controller
+        public virtual ICollection<ChiTietNhap_Tong> ChiTietNhapTongs { get; set; } = new List<ChiTietNhap_Tong>();
     }
 }

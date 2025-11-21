@@ -1,0 +1,62 @@
+@model IEnumerable<BHX_Web.Models.Entities.PhieuNhap_Tong>
+
+@{
+    ViewData["Title"] = "Lịch Sử Nhập Kho";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h2 class="text-primary fw-bold"><i class="fa-solid fa-history"></i> Lịch Sử Nhập Kho</h2>
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            <i class="fa-solid fa-plus"></i> Tạo Phiếu Nhập Mới
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th>Mã Phiếu</th>
+                        <th>Nhà Cung Cấp</th>
+                        <th>Ngày Nhập</th>
+                        <th class="text-end">Tổng Tiền</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold text-secondary ps-3">#@item.PhieuNhapID</td>
+                                <td class="fw-bold text-primary">@item.NhaCungCap?.TenNCC</td>
+                                <td>@item.NgayNhap.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="text-end fw-bold text-success">@string.Format("{0:N0} đ", item.TongTien)</td>
+                                <td class="text-center">
+                                    <a asp-action="Details" asp-route-id="@item.PhieuNhapID"
+                                        class="btn btn-sm btn-info text-white" title="Xem chi tiết">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@item.PhieuNhapID" method="post" class="d-inline"
+                                        onsubmit="return confirm('CẢNH BÁO: Xóa phiếu này sẽ TRỪ lại số lượng trong kho tổng. Bạn có chắc chắn?');">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Xóa phiếu"><i
+                                                class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Chưa có phiếu nhập hàng nào.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

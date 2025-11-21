@@ -1,0 +1,111 @@
+@model BHX_Web.ViewModels.PhanPhoiViewModel
+
+@{
+    ViewData["Title"] = "Phân Phối Hàng Hóa";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+    var listSanPhams = ViewBag.ListSanPham as IEnumerable<dynamic>;
+}
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4 text-info fw-bold"><i class="fa-solid fa-dolly"></i> Phân Phối Cho Cửa Hàng</h2>
+
+    <div class="card shadow mt-3">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row mb-4 bg-light p-3 rounded">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Chọn Cửa Hàng Nhận <span class="text-danger">*</span></label>
+                        <select asp-for="CuaHangID" class="form-select" asp-items="ViewBag.CuaHangID">
+                            <option value="">-- Chọn Cửa Hàng --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Ngày Phân Phối</label>
+                        <input asp-for="NgayTao" class="form-control" type="datetime-local"
+                            value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                    </div>
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mb-3">Danh Sách Hàng Cần Chuyển</h5>
+
+                <table class="table table-bordered" id="tblChiTiet">
+                    <thead class="table-primary">
+                        <tr>
+                            <th style="width: 60%">Sản Phẩm (Kèm tồn kho hiện tại)</th>
+                            <th style="width: 30%">Số Lượng Chuyển</th>
+                            <th style="width: 10%">#</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr class="item-row">
+                            <td>
+                                <select name="ChiTiets[0].SanPhamID" class="form-select" required>
+                                    <option value="">-- Chọn sản phẩm --</option>
+                                    @if (listSanPhams != null)
+                                    {
+                                        foreach (var sp in listSanPhams)
+                                        {
+                                            <option value="@sp.SanPhamID">@sp.TenHienThi</option>
+                                        }
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="ChiTiets[0].SoLuong" class="form-control text-center" min="1"
+                                    value="1" required />
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm btnRemove"><i
+                                        class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mb-3">
+                    <button type="button" class="btn btn-outline-primary" id="btnAddRow">
+                        <i class="fa-solid fa-plus"></i> Thêm dòng
+                    </button>
+                </div>
+
+                <div class="text-end border-top pt-3">
+                    <a asp-action="Index" class="btn btn-secondary me-2">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-paper-plane"></i> Tạo
+                        Phiếu Xuất</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tableBody = document.getElementById('tableBody');
+        const btnAddRow = document.getElementById('btnAddRow');
+        let rowIndex = 1;
+
+        btnAddRow.addEventListener('click', function () {
+            const newRow = tableBody.querySelector('.item-row').cloneNode(true);
+            newRow.querySelector('select').value = "";
+            newRow.querySelector('input').value = 1;
+
+            newRow.querySelectorAll('[name]').forEach(el => {
+                el.name = el.name.replace(/\[\d+\]/, `[${rowIndex}]`);
+            });
+
+            newRow.querySelector('.btnRemove').addEventListener('click', function () {
+                if (tableBody.querySelectorAll('.item-row').length > 1) newRow.remove();
+            });
+
+            tableBody.appendChild(newRow);
+            rowIndex++;
+        });
+
+        // Gắn sự kiện xóa cho dòng đầu tiên
+        document.querySelector('.btnRemove').addEventListener('click', function (e) {
+            if (tableBody.querySelectorAll('.item-row').length > 1) e.target.closest('tr').remove();
+        });
+    });
+</script>

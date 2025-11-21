@@ -16,6 +16,8 @@ builder.Services.AddDbContext<BHXContext>(options =>
 
 // ===================================================
 // [MỚI] 1.1. CẤU HÌNH SESSION (SỬA LỖI LOGOUT & GIỎ HÀNG)
+
+builder.Services.AddHttpContextAccessor();
 // ===================================================
 // Bắt buộc phải có đoạn này để dùng HttpContext.Session
 builder.Services.AddDistributedMemoryCache();

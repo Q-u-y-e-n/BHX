@@ -1,0 +1,144 @@
+@model BHX_Web.ViewModels.PhieuNhapViewModel
+
+@{
+    ViewData["Title"] = "Nhập Hàng Hỗn Hợp";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+    var listSanPhams = ViewBag.ListSanPham as IEnumerable<dynamic>;
+    var listNCC = ViewBag.ListNCC as SelectList;
+}
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4 text-primary fw-bold"><i class="fa-solid fa-layer-group"></i> Nhập Hàng Đa Nhà Cung Cấp</h2>
+    <div class="alert alert-info mt-2">
+        <i class="fa-solid fa-info-circle"></i> Bạn có thể nhập nhiều mặt hàng từ nhiều NCC khác nhau. Hệ thống sẽ
+        <strong>tự động tách thành các phiếu riêng biệt</strong> khi lưu.
+    </div>
+
+    <div class="card shadow mt-3 mb-5">
+        <div class="card-body">
+            <form asp-action="Create" method="post" id="formNhapHang">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row mb-4 bg-light p-3 rounded border">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Ngày Nhập Kho</label>
+                        <input asp-for="NgayNhap" class="form-control" type="datetime-local"
+                            value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                    </div>
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mb-3">Danh sách hàng hóa</h5>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle" id="tblChiTiet">
+                        <thead class="table-success text-center">
+                            <tr>
+                                <th style="width: 25%">Nhà Cung Cấp</th>
+                                <th style="width: 30%">Sản Phẩm</th>
+                                <th style="width: 10%">SL</th>
+                                <th style="width: 15%">Đơn Giá</th>
+                                <th style="width: 15%">Thành Tiền</th>
+                                <th style="width: 5%">#</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr class="item-row">
+                                <td>
+                                    <select name="ChiTiets[0].NhaCungCapID" class="form-select" asp-items="listNCC"
+                                        required>
+                                        <option value="">-- Chọn NCC --</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="ChiTiets[0].SanPhamID" class="form-select" required>
+                                        <option value="">-- Chọn SP --</option>
+                                        @if (listSanPhams != null)
+                                        {
+                                            foreach (var sp in listSanPhams)
+                                            {
+                                                <option value="@sp.SanPhamID">@sp.TenSanPham</option>
+                                            }
+                                        }
+                                    </select>
+                                </td>
+                                <td><input type="number" name="ChiTiets[0].SoLuong"
+                                        class="form-control text-center txtSL" min="1" value="1" required /></td>
+                                <td><input type="number" name="ChiTiets[0].DonGia" class="form-control text-end txtGia"
+                                        min="0" value="0" required /></td>
+                                <td class="text-end fw-bold text-primary lblThanhTien">0</td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-danger btn-sm btnRemove"><i
+                                            class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <button type="button" class="btn btn-outline-primary" id="btnAddRow"><i
+                            class="fa-solid fa-plus"></i> Thêm dòng</button>
+                    <div class="h4">Tổng Cộng: <span id="grandTotal" class="text-danger">0</span> đ</div>
+                </div>
+
+                <div class="text-end border-top pt-4 mt-4">
+                    <a asp-action="Index" class="btn btn-secondary px-3">Hủy</a>
+                    <button type="submit" class="btn btn-success px-5 fw-bold"><i class="fa-solid fa-save"></i> Lưu Tất
+                        Cả</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tableBody = document.getElementById('tableBody');
+        const btnAddRow = document.getElementById('btnAddRow');
+        let rowIndex = 1;
+
+        function calculateTotal() {
+            let grandTotal = 0;
+            tableBody.querySelectorAll('.item-row').forEach(row => {
+                const sl = parseFloat(row.querySelector('.txtSL').value) || 0;
+                const gia = parseFloat(row.querySelector('.txtGia').value) || 0;
+                const tt = sl * gia;
+                row.querySelector('.lblThanhTien').innerText = tt.toLocaleString('vi-VN');
+                grandTotal += tt;
+            });
+            document.getElementById('grandTotal').innerText = grandTotal.toLocaleString('vi-VN');
+        }
+
+        function attachEvents(row) {
+            row.querySelector('.txtSL').addEventListener('input', calculateTotal);
+            row.querySelector('.txtGia').addEventListener('input', calculateTotal);
+            row.querySelector('.btnRemove').addEventListener('click', function () {
+                if (tableBody.querySelectorAll('.item-row').length > 1) {
+                    row.remove();
+                    calculateTotal();
+                }
+            });
+        }
+
+        attachEvents(tableBody.querySelector('.item-row'));
+
+        btnAddRow.addEventListener('click', function () {
+            const newRow = tableBody.querySelector('.item-row').cloneNode(true);
+
+            // Reset giá trị
+            newRow.querySelectorAll('select').forEach(s => s.value = "");
+            newRow.querySelector('.txtSL').value = 1;
+            newRow.querySelector('.txtGia').value = 0;
+            newRow.querySelector('.lblThanhTien').innerText = "0";
+
+            // Cập nhật index name="..."
+            newRow.querySelectorAll('[name]').forEach(el => {
+                el.name = el.name.replace(/\[\d+\]/, `[${rowIndex}]`);
+            });
+
+            attachEvents(newRow);
+            tableBody.appendChild(newRow);
+            rowIndex++;
+        });
+    });
+</script>

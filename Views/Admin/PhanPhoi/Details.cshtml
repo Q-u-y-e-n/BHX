@@ -1,0 +1,188 @@
+@model BHX_Web.Models.Entities.PhieuPhanPhoi
+
+@{
+    ViewData["Title"] = "Chi Tiết Phân Phối";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <div>
+            <h2 class="text-info fw-bold mb-0"><i class="fa-solid fa-file-invoice-dollar"></i> Phiếu Xuất Phân Phối</h2>
+            <span class="text-muted">Mã phiếu: <strong>#@Model.PhieuPhanPhoiID</strong></span>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+            <button onclick="window.print()" class="btn btn-warning text-dark fw-bold"><i class="fa-solid fa-print"></i>
+                In Phiếu Xuất</button>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4" id="printableArea">
+
+        <div class="card-header bg-white border-bottom py-3">
+            <div class="row">
+                <div class="col-sm-6 border-end">
+                    <small class="text-muted text-uppercase fw-bold">Đơn vị xuất hàng</small>
+                    <h5 class="text-success fw-bold mt-1">KHO TỔNG BÁCH HÓA XANH</h5>
+                    <div class="small">
+                        <i class="fa-solid fa-location-dot"></i> Kho trung tâm KCN Tân Bình, TP.HCM<br />
+                        <i class="fa-solid fa-phone"></i> Hotline: 1900 1900
+                    </div>
+                </div>
+
+                <div class="col-sm-6 ps-4">
+                    <small class="text-muted text-uppercase fw-bold">Nơi nhận hàng</small>
+                    <h5 class="text-primary fw-bold mt-1">@(Model.CuaHang?.TenCuaHang ?? "Chưa xác định")</h5>
+                    <div class="small">
+                        <i class="fa-solid fa-location-dot"></i> @(Model.CuaHang?.DiaChi ?? "--")<br />
+                        <i class="fa-solid fa-phone"></i> @(Model.CuaHang?.SoDienThoai ?? "--")
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body bg-light border-bottom py-2">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <strong>Ngày tạo phiếu:</strong> @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")
+                </div>
+                <div class="col-md-4">
+                    <strong>Người lập:</strong> Admin (Hệ thống)
+                </div>
+                <div class="col-md-4">
+                    <strong>Trạng thái:</strong>
+                    @if (Model.TrangThai == "Đang giao")
+                    {
+                        <span class="badge bg-warning text-dark border border-dark">Đang giao hàng</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success border border-success">Đã nhận hàng</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0 align-middle">
+                    <thead class="bg-dark text-white">
+                        <tr>
+                            <th class="ps-4" style="width: 50px">#</th>
+                            <th>Sản Phẩm</th>
+                            <th class="text-center">Đơn Vị</th>
+                            <th class="text-center">Số Lượng Xuất</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.ChiTietPhanPhois != null && Model.ChiTietPhanPhois.Any())
+                        {
+                            int stt = 1;
+                            foreach (var item in Model.ChiTietPhanPhois)
+                            {
+                                <tr>
+                                    <td class="text-center">@stt</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(item.SanPham?.HinhAnh))
+                                            {
+                                                <img src="@item.SanPham.HinhAnh" alt="img" class="rounded border me-2 bg-white"
+                                                    style="width: 40px; height: 40px; object-fit: cover;"
+                                                    onerror="this.src='/images/no-image.png'" />
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center me-2"
+                                                    style="width: 40px; height: 40px;">
+                                                    <i class="fa-solid fa-box"></i>
+                                                </div>
+                                            }
+
+                                            <div>
+                                                <span class="fw-bold text-dark">@item.SanPham?.TenSanPham</span>
+                                                <br />
+                                                <small class="text-muted">Mã SP: @item.SanPhamID</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">@item.SanPham?.DonViTinh</td>
+                                    <td class="text-center">
+                                        <span class="fw-bold fs-5 text-primary">@item.SoLuong</span>
+                                    </td>
+                                    <td class="text-muted small fst-italic">Kiểm tra kỹ khi nhận</td>
+                                </tr>
+                                stt++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-3 text-muted">Không có dữ liệu chi tiết.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white py-4">
+            <div class="row text-center mt-3">
+                <div class="col-4">
+                    <strong>Người Lập Phiếu</strong><br />
+                    <small>(Ký, họ tên)</small>
+                    <br /><br /><br />
+                </div>
+                <div class="col-4">
+                    <strong>Người Giao Hàng</strong><br />
+                    <small>(Ký, họ tên)</small>
+                    <br /><br /><br />
+                </div>
+                <div class="col-4">
+                    <strong>Cửa Hàng Trưởng (Nhận)</strong><br />
+                    <small>(Ký, họ tên)</small>
+                    <br /><br /><br />
+                </div>
+            </div>
+            <div class="text-center text-muted small border-top pt-2 mt-2">
+                <i>In lúc: @DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") - Hệ thống quản lý Bách Hóa Xanh</i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #printableArea,
+        #printableArea * {
+            visibility: visible;
+        }
+
+        #printableArea {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            box-shadow: none !important;
+            /* Bỏ bóng khi in */
+            border: 1px solid #ddd !important;
+        }
+
+        .btn {
+            display: none;
+        }
+
+        /* Ẩn nút bấm */
+        .badge {
+            border: 1px solid #000 !important;
+            color: #000 !important;
+        }
+
+        /* Badge in trắng đen cho rõ */
+    }
+</style>

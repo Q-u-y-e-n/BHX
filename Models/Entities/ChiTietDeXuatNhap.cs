@@ -10,13 +10,16 @@ namespace BHX_Web.Models.Entities
         public int ChiTietDXID { get; set; }
 
         public int DeXuatID { get; set; }
+
         public int SanPhamID { get; set; }
+
         public int SoLuong { get; set; }
 
-        [ForeignKey(nameof(DeXuatID))]
-        public DeXuatNhapHang? DeXuatNhapHang { get; set; }
+        // Navigation
+        [ForeignKey("DeXuatID")]
+        public virtual DeXuatNhapHang? DeXuatNhapHang { get; set; }
 
-        [ForeignKey(nameof(SanPhamID))]
-        public SanPham? SanPham { get; set; }
+        [ForeignKey("SanPhamID")]
+        public virtual SanPham? SanPham { get; set; }
     }
 }

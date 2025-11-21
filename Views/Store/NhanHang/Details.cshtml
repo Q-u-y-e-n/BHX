@@ -1,0 +1,107 @@
+@model BHX_Web.Models.Entities.PhieuPhanPhoi
+
+@{
+    ViewData["Title"] = "Chi Tiết Nhận Hàng";
+    Layout = "~/Views/Shared/_Layout_Store.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h2 class="text-success fw-bold"><i class="fa-solid fa-clipboard-check"></i> Kiểm Tra Hàng Nhập</h2>
+        <a asp-action="Index" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-white py-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Mã Phiếu:</strong> #@Model.PhieuPhanPhoiID <br />
+                    <strong>Ngày Gửi:</strong> @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <strong>Trạng Thái:</strong>
+                    @if (Model.TrangThai == "Đang giao")
+                    {
+                        <span class="text-warning fw-bold text-uppercase">Chờ xác nhận</span>
+                    }
+                    else
+                    {
+                        <span class="text-success fw-bold text-uppercase">Đã nhập kho</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0 align-middle">
+                    <thead class="bg-dark text-white">
+                        <tr>
+                            <th class="ps-4">Sản Phẩm</th>
+                            <th class="text-center">ĐVT</th>
+                            <th class="text-center">Số Lượng Gửi</th>
+                            <th class="text-center">Tình Trạng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.ChiTietPhanPhois != null)
+                        {
+                            foreach (var item in Model.ChiTietPhanPhois)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(item.SanPham?.HinhAnh))
+                                            {
+                                                <img src="@item.SanPham.HinhAnh" class="rounded me-2 border"
+                                                    style="width: 40px; height: 40px; object-fit: cover;"
+                                                    onerror="this.src='/images/no-image.png'" />
+                                            }
+                                            <span class="fw-bold text-primary">@(item.SanPham?.TenSanPham ?? "Sản phẩm đã xóa")</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">@item.SanPham?.DonViTinh</td>
+                                    <td class="text-center fw-bold fs-5 text-danger">@item.SoLuong</td>
+                                    <td class="text-center">
+                                        @if (Model.TrangThai == "Đang giao")
+                                        {
+                                            <i class="fa-regular fa-square text-muted" title="Chưa nhận"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fa-solid fa-check-square text-success" title="Đã nhận"></i>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer bg-light py-3">
+            @if (Model.TrangThai == "Đang giao")
+            {
+                <div class="text-end">
+                    <span class="text-danger me-3 fst-italic small">* Vui lòng kiểm tra kỹ số lượng thực tế trước khi xác
+                        nhận.</span>
+
+                    <form asp-action="Confirm" method="post" class="d-inline"
+                        onsubmit="return confirm('Bạn xác nhận đã nhận đủ hàng? Kho cửa hàng sẽ được cập nhật ngay lập tức.');">
+                        <input type="hidden" name="id" value="@Model.PhieuPhanPhoiID" />
+                        <button type="submit" class="btn btn-success btn-lg fw-bold shadow">
+                            <i class="fa-solid fa-file-signature"></i> XÁC NHẬN ĐÃ NHẬN ĐỦ HÀNG
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success mb-0 text-center">
+                    <i class="fa-solid fa-check-circle"></i> Phiếu này đã được nhập kho thành công.
+                </div>
+            }
+        </div>
+    </div>
+</div>

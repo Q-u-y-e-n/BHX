@@ -1,0 +1,118 @@
+@model BHX_Web.ViewModels.DeXuatViewModel
+
+@{
+    ViewData["Title"] = "Tạo Phiếu Đề Xuất";
+    Layout = "~/Views/Shared/_Layout_Store.cshtml";
+    var listSanPhams = ViewBag.ListSanPham as IEnumerable<dynamic>;
+}
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4 text-primary fw-bold"><i class="fa-solid fa-pen-to-square"></i> Lập Phiếu Yêu Cầu Nhập Hàng</h2>
+    <p class="text-muted">Chọn các mặt hàng bạn muốn nhập thêm về cửa hàng.</p>
+
+    <div class="card shadow mt-3 mb-5">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <table class="table table-bordered align-middle" id="tblChiTiet">
+                    <thead class="table-primary text-center">
+                        <tr>
+                            <th style="width: 50%">Sản Phẩm (Tồn kho hiện tại)</th>
+                            <th style="width: 20%">ĐVT</th>
+                            <th style="width: 20%">Số Lượng Cần Nhập</th>
+                            <th style="width: 10%">#</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr class="item-row">
+                            <td>
+                                <select name="Items[0].SanPhamID" class="form-select sp-select" required
+                                    onchange="updateUnit(this)">
+                                    <option value="" data-unit="">-- Chọn sản phẩm --</option>
+                                    @if (listSanPhams != null)
+                                    {
+                                        foreach (var sp in listSanPhams)
+                                        {
+                                            <option value="@sp.SanPhamID" data-unit="@sp.DonViTinh">
+                                                @sp.TenHienThi (Tồn: @sp.TonKho)
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                            </td>
+                            <td class="text-center unit-text">--</td>
+                            <td>
+                                <input type="number" name="Items[0].SoLuongDeXuat"
+                                    class="form-control text-center fw-bold text-success" min="1" value="1" required />
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-outline-danger btn-sm btnRemove"><i
+                                        class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mb-4">
+                    <button type="button" class="btn btn-outline-primary" id="btnAddRow">
+                        <i class="fa-solid fa-plus-circle"></i> Thêm dòng sản phẩm
+                    </button>
+                </div>
+
+                <div class="d-flex justify-content-end border-top pt-3 gap-2">
+                    <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-success btn-lg fw-bold shadow">
+                        <i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tableBody = document.getElementById('tableBody');
+        const btnAddRow = document.getElementById('btnAddRow');
+        let rowIndex = 1;
+
+        // Hàm cập nhật ĐVT khi chọn sản phẩm
+        window.updateUnit = function (select) {
+            const unit = select.options[select.selectedIndex].getAttribute('data-unit');
+            const row = select.closest('tr');
+            row.querySelector('.unit-text').innerText = unit || '--';
+        }
+
+        // Nút Thêm dòng
+        btnAddRow.addEventListener('click', function () {
+            const firstRow = tableBody.querySelector('.item-row');
+            const newRow = firstRow.cloneNode(true);
+
+            // Reset giá trị
+            newRow.querySelector('select').value = "";
+            newRow.querySelector('.unit-text').innerText = "--";
+            newRow.querySelector('input').value = 1;
+
+            // Cập nhật index cho name="Items[...]"
+            newRow.querySelectorAll('[name]').forEach(el => {
+                const name = el.getAttribute('name');
+                const newName = name.replace(/\[\d+\]/, `[${rowIndex}]`);
+                el.setAttribute('name', newName);
+            });
+
+            // Gắn sự kiện xóa
+            newRow.querySelector('.btnRemove').addEventListener('click', function () {
+                if (tableBody.querySelectorAll('.item-row').length > 1) newRow.remove();
+            });
+
+            tableBody.appendChild(newRow);
+            rowIndex++;
+        });
+
+        // Sự kiện xóa cho dòng đầu tiên
+        document.querySelector('.btnRemove').addEventListener('click', function (e) {
+            if (tableBody.querySelectorAll('.item-row').length > 1) e.target.closest('tr').remove();
+        });
+    });
+</script>

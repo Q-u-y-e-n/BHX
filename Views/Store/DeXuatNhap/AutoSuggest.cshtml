@@ -1,0 +1,81 @@
+@model BHX_Web.ViewModels.DeXuatViewModel
+
+@{
+    ViewData["Title"] = "Đề xuất nhập hàng";
+    Layout = "~/Views/Shared/_Layout_Store.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4 text-danger fw-bold"><i class="fa-solid fa-bell"></i> Cảnh Báo Hàng Sắp Hết</h2>
+    <p class="text-muted">Hệ thống tự động lọc các sản phẩm có tồn kho <strong>dưới 10</strong>.</p>
+
+    <div class="card shadow mb-5">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+
+                @if (Model.Items != null && Model.Items.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="bg-warning text-dark text-center">
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th style="width: 40%;">Sản Phẩm</th>
+                                    <th>Tồn Kho Hiện Tại</th>
+                                    <th style="width: 200px;">Số Lượng Muốn Nhập</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Items.Count; i++)
+                                {
+                                    <tr>
+                                        <td class="text-center">@(i + 1)</td>
+                                        <td>
+                                            <input type="hidden" asp-for="Items[i].SanPhamID" />
+                                            <input type="hidden" asp-for="Items[i].TenSanPham" />
+
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(Model.Items[i].HinhAnh))
+                                                {
+                                                    <img src="@Model.Items[i].HinhAnh" class="rounded border me-2"
+                                                        style="width: 40px; height: 40px; object-fit: cover;" />
+                                                }
+                                                <div>
+                                                    <div class="fw-bold text-primary">@Model.Items[i].TenSanPham</div>
+                                                    <small class="text-muted">ĐVT: @Model.Items[i].DonViTinh</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-danger fs-6">@Model.Items[i].TonKhoHienTai</span>
+                                        </td>
+                                        <td>
+                                            <input asp-for="Items[i].SoLuongDeXuat" type="number"
+                                                class="form-control text-center fw-bold border-success" min="0" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-end pt-3 border-top gap-2">
+                        <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-success btn-lg fw-bold shadow">
+                            <i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu Ngay
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fa-solid fa-check-circle fa-4x text-success mb-3"></i>
+                        <h4>Kho hàng đang ổn định!</h4>
+                        <p class="text-muted">Không có sản phẩm nào dưới định mức tồn kho (10).</p>
+                        <a asp-action="Index" class="btn btn-primary">Xem lịch sử</a>
+                    </div>
+                }
+            </form>
+        </div>
+    </div>
+</div>
