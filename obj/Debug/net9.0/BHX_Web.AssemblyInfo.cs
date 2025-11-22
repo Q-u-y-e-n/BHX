@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BHX_Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+752fc64b36b53494a5037f873ef13ed639dcebc6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2806612260c2184f8fde63007b439ed27f6dbe98")]
 [assembly: System.Reflection.AssemblyProductAttribute("BHX_Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BHX_Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

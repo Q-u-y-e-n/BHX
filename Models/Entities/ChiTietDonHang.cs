@@ -10,16 +10,19 @@ namespace BHX_Web.Models.Entities
         public int ChiTietDonHangID { get; set; }
 
         public int DonHangID { get; set; }
+
         public int SanPhamID { get; set; }
+
         public int SoLuong { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal DonGia { get; set; }
 
-        [ForeignKey(nameof(DonHangID))]
-        public DonHang? DonHang { get; set; }
+        // Navigation
+        [ForeignKey("DonHangID")]
+        public virtual DonHang? DonHang { get; set; }
 
-        [ForeignKey(nameof(SanPhamID))]
-        public SanPham? SanPham { get; set; }
+        [ForeignKey("SanPhamID")]
+        public virtual SanPham? SanPham { get; set; }
     }
 }

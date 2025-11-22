@@ -18,7 +18,7 @@ namespace BHX_Web.Controllers.Admin
         }
 
         // ============================================================
-        // 1. DANH SÁCH YÊU CẦU (INDEX)
+        // 1. DANH SÁCH YÊU CẦU
         // ============================================================
         public async Task<IActionResult> Index(string status = "Chờ duyệt")
         {
@@ -36,7 +36,7 @@ namespace BHX_Web.Controllers.Admin
         }
 
         // ============================================================
-        // 2. XEM CHI TIẾT ĐỂ DUYỆT
+        // 2. XEM CHI TIẾT & KIỂM TRA TỒN KHO
         // ============================================================
         public async Task<IActionResult> Details(int id)
         {
@@ -48,41 +48,67 @@ namespace BHX_Web.Controllers.Admin
 
             if (phieu == null) return NotFound();
 
-            // Lấy thêm thông tin Tồn Kho Tổng hiện tại để Admin biết có đủ hàng duyệt không
+            // Lấy thông tin Tồn Kho Tổng hiện tại để hiển thị lên View
+            // Giúp Admin biết có đủ hàng để duyệt hay không
             foreach (var item in phieu.ChiTietDeXuatNhaps)
             {
-                // Tạm lưu tồn kho tổng vào ViewData hoặc ViewBag để hiển thị
-                var tonKhoTong = await _context.KhoTongs
+                // Tìm dòng tồn kho của sản phẩm này
+                var khoTong = await _context.KhoTongs
                     .Where(k => k.SanPhamID == item.SanPhamID)
-                    .Select(k => k.SoLuong)
+                    .OrderByDescending(k => k.SoLuong) // Lấy dòng có số lượng lớn nhất nếu lỡ bị trùng
                     .FirstOrDefaultAsync();
 
-                // Dùng ViewData dynamic để truyền sang View
-                ViewData[$"TonKho_{item.SanPhamID}"] = tonKhoTong;
+                int soLuongTon = khoTong?.SoLuong ?? 0;
+
+                // Lưu vào ViewData để View sử dụng
+                ViewData[$"TonKho_{item.SanPhamID}"] = soLuongTon;
             }
 
             return View(phieu);
         }
 
         // ============================================================
-        // 3. XỬ LÝ DUYỆT PHIẾU (APPROVE) -> TỰ TẠO PHIẾU PHÂN PHỐI
+        // 3. XỬ LÝ DUYỆT (APPROVE) - LOGIC QUAN TRỌNG
         // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id)
         {
+            // 1. Lấy dữ liệu phiếu đề xuất
             var deXuat = await _context.DeXuatNhapHangs
                 .Include(d => d.ChiTietDeXuatNhaps)
+                .ThenInclude(ct => ct.SanPham)
                 .FirstOrDefaultAsync(d => d.DeXuatID == id);
 
             if (deXuat == null) return NotFound();
-            if (deXuat.TrangThai != "Chờ duyệt") return RedirectToAction(nameof(Index));
+
+            // Chỉ được duyệt phiếu đang chờ
+            if (deXuat.TrangThai != "Chờ duyệt")
+            {
+                TempData["ErrorMessage"] = "Phiếu này đã được xử lý rồi!";
+                return RedirectToAction(nameof(Details), new { id = id });
+            }
 
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
-                    // 1. Tạo Phiếu Phân Phối mới (Tự động)
+                    // 2. Kiểm tra tồn kho TẤT CẢ sản phẩm trước khi thực hiện
+                    // Nếu thiếu dù chỉ 1 món cũng không cho duyệt (để đảm bảo tính trọn vẹn)
+                    foreach (var item in deXuat.ChiTietDeXuatNhaps)
+                    {
+                        var khoTong = await _context.KhoTongs
+                             .FirstOrDefaultAsync(k => k.SanPhamID == item.SanPhamID);
+
+                        int tonHienTai = khoTong?.SoLuong ?? 0;
+
+                        if (tonHienTai < item.SoLuong)
+                        {
+                            throw new Exception($"Thiếu hàng: {item.SanPham?.TenSanPham} (Cần: {item.SoLuong}, Kho chỉ còn: {tonHienTai}). Vui lòng nhập thêm hàng!");
+                        }
+                    }
+
+                    // 3. Tạo Phiếu Phân Phối (Header)
                     var phieuPhanPhoi = new PhieuPhanPhoi
                     {
                         CuaHangID = deXuat.CuaHangID,
@@ -90,59 +116,51 @@ namespace BHX_Web.Controllers.Admin
                         TrangThai = "Đang giao"
                     };
                     _context.PhieuPhanPhois.Add(phieuPhanPhoi);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(); // Lưu để lấy ID
 
-                    // 2. Duyệt từng sản phẩm để trừ kho và tạo chi tiết phân phối
+                    // 4. Trừ Kho & Tạo Chi Tiết Phân Phối
                     foreach (var item in deXuat.ChiTietDeXuatNhaps)
                     {
-                        // Kiểm tra kho tổng
+                        // Trừ kho tổng
                         var khoTong = await _context.KhoTongs.FirstOrDefaultAsync(k => k.SanPhamID == item.SanPhamID);
-
-                        // Nếu kho không đủ hàng -> Chỉ xuất số lượng tối đa đang có
-                        int soLuongXuat = item.SoLuong;
-                        if (khoTong == null || khoTong.SoLuong < item.SoLuong)
+                        if (khoTong != null)
                         {
-                            // Logic: Có thể báo lỗi hoặc chỉ xuất phần còn lại. 
-                            // Ở đây tôi chọn cách: Báo lỗi để Admin nhập hàng trước.
-                            throw new Exception($"Sản phẩm ID {item.SanPhamID} không đủ hàng trong Kho Tổng để duyệt!");
+                            khoTong.SoLuong -= item.SoLuong;
+                            _context.Update(khoTong);
                         }
 
-                        // Trừ kho tổng
-                        khoTong.SoLuong -= soLuongXuat;
-                        _context.Update(khoTong);
-
-                        // Tạo chi tiết phân phối
+                        // Tạo dòng chi tiết phân phối
                         _context.ChiTietPhanPhois.Add(new ChiTietPhanPhoi
                         {
                             PhieuPhanPhoiID = phieuPhanPhoi.PhieuPhanPhoiID,
                             SanPhamID = item.SanPhamID,
-                            SoLuong = soLuongXuat
+                            SoLuong = item.SoLuong
                         });
                     }
 
-                    // 3. Cập nhật trạng thái Đề Xuất
+                    // 5. Cập nhật trạng thái Đề Xuất
                     deXuat.TrangThai = "Đã duyệt";
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    TempData["SuccessMessage"] = $"Đã duyệt đề xuất #{id} và tạo Phiếu Phân Phối tự động!";
+                    TempData["SuccessMessage"] = $"Duyệt thành công! Đã tạo phiếu xuất kho #{phieuPhanPhoi.PhieuPhanPhoiID}.";
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    TempData["ErrorMessage"] = "Lỗi khi duyệt: " + ex.Message;
+                    TempData["ErrorMessage"] = ex.Message; // Hiển thị lỗi cụ thể
                     return RedirectToAction(nameof(Details), new { id = id });
                 }
             }
-
-            return RedirectToAction(nameof(Index));
         }
 
         // ============================================================
         // 4. TỪ CHỐI (REJECT)
         // ============================================================
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(int id)
         {
             var deXuat = await _context.DeXuatNhapHangs.FindAsync(id);
@@ -150,7 +168,7 @@ namespace BHX_Web.Controllers.Admin
             {
                 deXuat.TrangThai = "Từ chối";
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Đã từ chối yêu cầu nhập hàng.";
+                TempData["SuccessMessage"] = "Đã từ chối yêu cầu.";
             }
             return RedirectToAction(nameof(Index));
         }

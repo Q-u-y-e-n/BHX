@@ -13,7 +13,7 @@ namespace BHX_Web.Controllers.Customer
     public class GioHangController : Controller
     {
         private readonly BHXContext _context;
-        const string CART_KEY = "Online_Cart"; // Key lưu trong Session
+        const string CART_KEY = "Online_Cart";
 
         public GioHangController(BHXContext context)
         {
@@ -21,22 +21,20 @@ namespace BHX_Web.Controllers.Customer
         }
 
         // ============================================================
-        // HELPER: CÁC HÀM HỖ TRỢ (PRIVATE)
+        // 1. HELPER METHODS (Hỗ trợ xử lý)
         // ============================================================
 
-        // 1. Lấy giỏ hàng từ Session
         private List<GioHangItem> GetCartItems()
         {
             return HttpContext.Session.Get<List<GioHangItem>>(CART_KEY) ?? new List<GioHangItem>();
         }
 
-        // 2. Lưu giỏ hàng vào Session
         private void SaveCartSession(List<GioHangItem> list)
         {
             HttpContext.Session.Set(CART_KEY, list);
         }
 
-        // 3. [QUAN TRỌNG] Đồng bộ dữ liệu vào SQL Server (Chỉ chạy khi đã Login)
+        // Đồng bộ giỏ hàng vào SQL (Chỉ chạy khi đã đăng nhập)
         private async Task SyncSqlCart(int sanPhamId, int newQuantity)
         {
             if (User.Identity?.IsAuthenticated == true)
@@ -45,33 +43,22 @@ namespace BHX_Web.Controllers.Customer
                 if (userIdClaim != null)
                 {
                     int userId = int.Parse(userIdClaim.Value);
-
-                    // Tìm sản phẩm trong bảng GioHang của User này
-                    var dbItem = await _context.GioHangs
-                        .FirstOrDefaultAsync(g => g.UserID == userId && g.SanPhamID == sanPhamId);
+                    var dbItem = await _context.GioHangs.FirstOrDefaultAsync(g => g.UserID == userId && g.SanPhamID == sanPhamId);
 
                     if (newQuantity <= 0)
                     {
-                        // Nếu số lượng <= 0 thì Xóa khỏi DB
                         if (dbItem != null) _context.GioHangs.Remove(dbItem);
                     }
                     else
                     {
                         if (dbItem != null)
                         {
-                            // Nếu đã có -> Cập nhật số lượng
                             dbItem.SoLuong = newQuantity;
                             _context.Update(dbItem);
                         }
                         else
                         {
-                            // Nếu chưa có -> Thêm mới
-                            _context.GioHangs.Add(new GioHang
-                            {
-                                UserID = userId,
-                                SanPhamID = sanPhamId,
-                                SoLuong = newQuantity
-                            });
+                            _context.GioHangs.Add(new GioHang { UserID = userId, SanPhamID = sanPhamId, SoLuong = newQuantity });
                         }
                     }
                     await _context.SaveChangesAsync();
@@ -80,10 +67,9 @@ namespace BHX_Web.Controllers.Customer
         }
 
         // ============================================================
-        // CÁC ACTION CHÍNH (PUBLIC)
+        // 2. CÁC CHỨC NĂNG GIỎ HÀNG (Thêm/Sửa/Xóa)
         // ============================================================
 
-        // 1. XEM GIỎ HÀNG
         public IActionResult Index()
         {
             var cart = GetCartItems();
@@ -91,7 +77,6 @@ namespace BHX_Web.Controllers.Customer
             return View(cart);
         }
 
-        // 2. THÊM VÀO GIỎ (ADD TO CART)
         public async Task<IActionResult> AddToCart(int id)
         {
             var product = await _context.SanPhams.FindAsync(id);
@@ -103,13 +88,11 @@ namespace BHX_Web.Controllers.Customer
 
             if (item != null)
             {
-                // Nếu đã có trong giỏ -> Tăng số lượng
                 item.SoLuong++;
                 quantity = item.SoLuong;
             }
             else
             {
-                // Nếu chưa có -> Thêm mới vào List
                 cart.Add(new GioHangItem
                 {
                     SanPhamID = product.SanPhamID,
@@ -120,167 +103,225 @@ namespace BHX_Web.Controllers.Customer
                 });
             }
 
-            // Lưu Session
             SaveCartSession(cart);
-
-            // Đồng bộ SQL (Async)
             await SyncSqlCart(id, quantity);
-
             return RedirectToAction(nameof(Index));
         }
 
-        // 3. CẬP NHẬT SỐ LƯỢNG (UPDATE)
         [HttpPost]
         public async Task<IActionResult> UpdateCart(int id, int quantity)
         {
             var cart = GetCartItems();
             var item = cart.FirstOrDefault(p => p.SanPhamID == id);
-
             if (item != null)
             {
                 if (quantity > 0)
                 {
                     item.SoLuong = quantity;
-                    await SyncSqlCart(id, quantity); // Lưu DB số lượng mới
+                    await SyncSqlCart(id, quantity);
                 }
                 else
                 {
-                    // Nếu chỉnh về 0 hoặc âm -> Xóa luôn
                     cart.Remove(item);
-                    await SyncSqlCart(id, 0); // Lưu DB (xóa)
+                    await SyncSqlCart(id, 0);
                 }
-                SaveCartSession(cart); // Lưu Session
+                SaveCartSession(cart);
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // 4. XÓA SẢN PHẨM (REMOVE)
         public async Task<IActionResult> Remove(int id)
         {
             var cart = GetCartItems();
             var item = cart.FirstOrDefault(p => p.SanPhamID == id);
-
             if (item != null)
             {
                 cart.Remove(item);
                 SaveCartSession(cart);
-
-                // Đồng bộ DB (Truyền 0 để hàm Sync tự hiểu là xóa)
                 await SyncSqlCart(id, 0);
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // 5. XÓA HẾT GIỎ (CLEAR ALL)
         public async Task<IActionResult> Clear()
         {
-            // Xóa sạch Session
             HttpContext.Session.Remove(CART_KEY);
-
-            // Xóa sạch trong DB nếu đang đăng nhập
             if (User.Identity?.IsAuthenticated == true)
             {
-                var userIdClaim = User.FindFirst("UserID");
-                if (userIdClaim != null)
+                var userIdStr = User.FindFirst("UserID")?.Value;
+                if (!string.IsNullOrEmpty(userIdStr))
                 {
-                    int userId = int.Parse(userIdClaim.Value);
-                    // Lấy tất cả dòng của user này và xóa
+                    int userId = int.Parse(userIdStr);
                     var items = _context.GioHangs.Where(g => g.UserID == userId);
                     _context.GioHangs.RemoveRange(items);
                     await _context.SaveChangesAsync();
                 }
             }
-
             return RedirectToAction(nameof(Index));
         }
 
-        // 6. THANH TOÁN (CHECKOUT)
-        [Authorize(Roles = "Customer,Admin,Store")] // Yêu cầu đăng nhập
+        // ============================================================
+        // 3. THANH TOÁN (CHECKOUT) & TỰ ĐỘNG GÁN CỬA HÀNG
+        // ============================================================
+
+        [Authorize(Roles = "Customer,Admin,Store")]
+        [HttpGet]
         public async Task<IActionResult> Checkout()
         {
             var cart = GetCartItems();
-            if (cart == null || !cart.Any())
+            if (cart == null || !cart.Any()) return RedirectToAction(nameof(Index));
+
+            var userPhone = User.Identity?.Name;
+            var userName = User.FindFirst(ClaimTypes.GivenName)?.Value;
+
+            // Tìm thông tin khách cũ (nếu có) để điền sẵn
+            var khachHang = await _context.KhachHangs.FirstOrDefaultAsync(k => k.SoDienThoai == userPhone);
+
+            var model = new CheckoutViewModel
             {
-                TempData["ErrorMessage"] = "Giỏ hàng trống, không thể thanh toán.";
-                return RedirectToAction(nameof(Index));
-            }
+                CartItems = cart,
+                TongTien = cart.Sum(x => x.ThanhTien),
+                TenNguoiNhan = userName ?? "",
+                SoDienThoai = userPhone ?? "",
+                DiaChi = khachHang?.DiaChi ?? ""
+            };
 
-            // Lấy thông tin User hiện tại
-            var userIdStr = User.FindFirst("UserID")?.Value;
-            var userPhone = User.Identity?.Name; // Username là Số điện thoại
-            var userName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? "Khách hàng";
+            return View(model);
+        }
 
-            if (string.IsNullOrEmpty(userIdStr)) return RedirectToAction("Login", "Account");
+        // ... (Các using và code cũ giữ nguyên)
 
-            // --- BẮT ĐẦU TRANSACTION ĐỂ TẠO ĐƠN HÀNG ---
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+        [Authorize(Roles = "Customer,Admin,Store")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcessCheckout(CheckoutViewModel model)
+        {
+            var cart = GetCartItems();
+            if (cart == null || !cart.Any()) return RedirectToAction(nameof(Index));
+
+            if (ModelState.IsValid)
             {
-                try
+                var userPhone = User.Identity?.Name;
+
+                using (var transaction = await _context.Database.BeginTransactionAsync())
                 {
-                    // A. Kiểm tra xem User này đã có trong bảng KhachHang chưa?
-                    // (Bảng Users dùng để Login, bảng KhachHang dùng để lưu lịch sử mua/tích điểm)
-                    var khachHang = await _context.KhachHangs.FirstOrDefaultAsync(k => k.SoDienThoai == userPhone);
-
-                    if (khachHang == null)
+                    try
                     {
-                        // Nếu chưa có -> Tạo mới Khách Hàng tự động
-                        khachHang = new KhachHang
+                        // 1. Cập nhật thông tin Khách hàng
+                        var khachHang = await _context.KhachHangs.FirstOrDefaultAsync(k => k.SoDienThoai == userPhone);
+                        if (khachHang == null)
                         {
-                            TenKhachHang = userName,
-                            SoDienThoai = userPhone,
-                            DiaChi = "Cập nhật sau"
-                        };
-                        _context.KhachHangs.Add(khachHang);
+                            khachHang = new KhachHang { TenKhachHang = model.TenNguoiNhan, SoDienThoai = model.SoDienThoai, DiaChi = model.DiaChi };
+                            _context.KhachHangs.Add(khachHang);
+                        }
+                        else
+                        {
+                            khachHang.TenKhachHang = model.TenNguoiNhan;
+                            khachHang.DiaChi = model.DiaChi; // Cập nhật địa chỉ mới nhất
+                            _context.Update(khachHang);
+                        }
                         await _context.SaveChangesAsync();
-                    }
 
-                    // B. Tạo Đơn Hàng Mới
-                    var donHang = new DonHang
-                    {
-                        KhachHangID = khachHang.KhachHangID,
-                        NgayDat = DateTime.Now,
-                        TrangThai = "Chờ xác nhận"
-                    };
-                    _context.DonHangs.Add(donHang);
-                    await _context.SaveChangesAsync(); // Lưu để lấy DonHangID
+                        // ==================================================================================
+                        // 🔥 THUẬT TOÁN PHÂN CHIA ĐƠN HÀNG THEO KHU VỰC (ROUTING) 🔥
+                        // ==================================================================================
 
-                    // C. Lưu Chi Tiết Đơn Hàng
-                    foreach (var item in cart)
-                    {
-                        var chiTiet = new ChiTietDonHang
+                        int? targetStoreId = null;
+                        string diaChiKhach = model.DiaChi.ToLower(); // Chuyển về chữ thường để so sánh: "quận 1"
+
+                        // Lấy tất cả cửa hàng đang hoạt động
+                        var activeStores = await _context.CuaHangs.Where(c => c.TrangThai == "Hoạt động").ToListAsync();
+
+                        // Danh sách từ khóa Quận/Huyện (Bạn có thể mở rộng thêm)
+                        // Logic: Nếu địa chỉ khách chứa từ khóa -> Gán cho cửa hàng có địa chỉ chứa từ khóa đó
+                        var districtKeywords = new List<string> {
+                    "quận 1", "quận 2", "quận 3", "quận 4", "quận 5", "quận 6", "quận 7", "quận 8", "quận 9", "quận 10", "quận 11", "quận 12",
+                    "thủ đức", "bình thạnh", "gò vấp", "phú nhuận", "tân bình", "tân phú", "bình tân",
+                    "hóc môn", "củ chi", "nhà bè", "bình chánh", "cần giờ"
+                };
+
+                        foreach (var kw in districtKeywords)
                         {
-                            DonHangID = donHang.DonHangID,
-                            SanPhamID = item.SanPhamID,
-                            SoLuong = item.SoLuong,
-                            DonGia = item.DonGia
+                            // Nếu địa chỉ khách có chứa từ khóa này (Ví dụ: "quận 1")
+                            if (diaChiKhach.Contains(kw))
+                            {
+                                // Tìm cửa hàng nào cũng nằm trong khu vực đó (Địa chỉ cửa hàng chứa "quận 1")
+                                var matchStore = activeStores.FirstOrDefault(s => s.DiaChi.ToLower().Contains(kw));
+
+                                if (matchStore != null)
+                                {
+                                    targetStoreId = matchStore.CuaHangID;
+                                    break; // Tìm thấy cửa hàng phù hợp nhất thì dừng lại ngay
+                                }
+                            }
+                        }
+
+                        // Nếu không tìm thấy cửa hàng nào khớp quận (hoặc khách ở tỉnh),
+                        // Gán về Cửa hàng mặc định (ID=1 hoặc cửa hàng đầu tiên tìm thấy) để Admin xử lý sau
+                        if (targetStoreId == null && activeStores.Any())
+                        {
+                            targetStoreId = activeStores.First().CuaHangID;
+                        }
+                        // ==================================================================================
+
+                        // 2. Tạo Đơn Hàng
+                        var donHang = new DonHang
+                        {
+                            KhachHangID = khachHang.KhachHangID,
+                            NgayDat = DateTime.Now,
+                            TrangThai = "Chờ xác nhận",
+                            CuaHangID = targetStoreId // <--- QUAN TRỌNG: Đơn hàng đã được gán cho cửa hàng cụ thể
                         };
-                        _context.ChiTietDonHangs.Add(chiTiet);
+                        _context.DonHangs.Add(donHang);
+                        await _context.SaveChangesAsync();
+
+                        // 3. Lưu Chi Tiết Đơn
+                        foreach (var item in cart)
+                        {
+                            _context.ChiTietDonHangs.Add(new ChiTietDonHang
+                            {
+                                DonHangID = donHang.DonHangID,
+                                SanPhamID = item.SanPhamID,
+                                SoLuong = item.SoLuong,
+                                DonGia = item.DonGia
+                            });
+                        }
+                        await _context.SaveChangesAsync();
+
+                        // 4. Dọn dẹp
+                        HttpContext.Session.Remove(CART_KEY);
+                        if (User.Identity.IsAuthenticated)
+                        {
+                            var userIdStr = User.FindFirst("UserID")?.Value;
+                            if (userIdStr != null)
+                            {
+                                int uid = int.Parse(userIdStr);
+                                var dbCart = _context.GioHangs.Where(g => g.UserID == uid);
+                                _context.GioHangs.RemoveRange(dbCart);
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+
+                        await transaction.CommitAsync();
+                        return RedirectToAction(nameof(OrderSuccess), new { id = donHang.DonHangID });
                     }
-                    await _context.SaveChangesAsync();
-
-                    // D. Xóa Giỏ hàng (Session + DB) sau khi đặt xong
-                    HttpContext.Session.Remove(CART_KEY);
-
-                    int userId = int.Parse(userIdStr);
-                    var cartItemsDb = _context.GioHangs.Where(g => g.UserID == userId);
-                    _context.GioHangs.RemoveRange(cartItemsDb);
-                    await _context.SaveChangesAsync();
-
-                    // E. Hoàn tất
-                    await transaction.CommitAsync();
-
-                    // Chuyển đến trang thông báo thành công (Cần tạo View Success)
-                    // Hoặc tạm thời hiện thông báo và về trang chủ
-                    TempData["SuccessMessage"] = $"Đặt hàng thành công! Mã đơn hàng của bạn là #{donHang.DonHangID}";
-                    return RedirectToAction("Index", "DonHang", new { area = "Customer" });
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    TempData["ErrorMessage"] = "Lỗi khi đặt hàng: " + ex.Message;
-                    return RedirectToAction(nameof(Index));
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync();
+                        ModelState.AddModelError("", "Lỗi xử lý: " + ex.Message);
+                    }
                 }
             }
+
+            // Reload View nếu lỗi
+            model.CartItems = cart;
+            model.TongTien = cart.Sum(x => x.ThanhTien);
+            return View("Checkout", model);
+        }
+
+        public IActionResult OrderSuccess(int id)
+        {
+            return View(id);
         }
     }
 }

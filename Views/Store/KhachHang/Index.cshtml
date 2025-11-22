@@ -1,0 +1,73 @@
+@model IEnumerable<BHX_Web.Models.Entities.KhachHang>
+
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+    Layout = "~/Views/Shared/_Layout_Store.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h2 class="text-primary fw-bold"><i class="fa-solid fa-users"></i> Danh Sách Khách Hàng</h2>
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            <i class="fa-solid fa-user-plus"></i> Thêm Khách Mới
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="d-flex">
+                <input type="text" name="searchString" class="form-control me-2"
+                    placeholder="Nhập tên hoặc số điện thoại..." value="@ViewData["CurrentFilter"]">
+                <button class="btn btn-primary px-4" type="submit">Tìm kiếm</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Mã KH</th>
+                        <th>Họ Tên</th>
+                        <th>Số Điện Thoại</th>
+                        <th>Địa Chỉ</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-secondary">#@item.KhachHangID</td>
+                                <td class="fw-bold text-primary">@item.TenKhachHang</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">@item.SoDienThoai</span>
+                                </td>
+                                <td>@(item.DiaChi ?? "--")</td>
+                                <td class="text-center">
+                                    <a asp-action="Details" asp-route-id="@item.KhachHangID"
+                                        class="btn btn-sm btn-info text-white" title="Xem lịch sử">
+                                        <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.KhachHangID"
+                                        class="btn btn-sm btn-warning text-dark" title="Sửa">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Không tìm thấy khách hàng nào.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

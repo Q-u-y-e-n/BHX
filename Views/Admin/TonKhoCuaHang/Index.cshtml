@@ -1,0 +1,146 @@
+@model IEnumerable<BHX_Web.Models.Entities.TonKho_CuaHang>
+
+@{
+    ViewData["Title"] = "Tồn Kho Hệ Thống";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4 text-primary fw-bold"><i class="fa-solid fa-boxes-stacked"></i> Giám Sát Tồn Kho Các Chi Nhánh</h2>
+
+    <div class="card shadow-sm mt-3 mb-4 bg-light">
+        <div class="card-body py-3">
+            <form asp-action="Index" method="get" class="row g-3 align-items-center">
+
+                <div class="col-md-3">
+                    <label class="fw-bold small">Chọn Cửa Hàng:</label>
+                    <select name="cuaHangId" class="form-select" asp-items="ViewBag.CuaHangID"
+                        onchange="this.form.submit()">
+                        <option value="">-- Tất cả chi nhánh --</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="fw-bold small">Trạng Thái:</label>
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="All" selected="@(ViewBag.CurrentStatus == "All")">Tất cả</option>
+                        <option value="Low" selected="@(ViewBag.CurrentStatus == "Low")">⚠️ Sắp hết (< 10)</option>
+                        <option value="Empty" selected="@(ViewBag.CurrentStatus == "Empty")">❌ Đã hết (0)</option>
+                        <option value="High" selected="@(ViewBag.CurrentStatus == "High")">📦 Tồn nhiều (> 100)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="fw-bold small">Tìm sản phẩm:</label>
+                    <div class="input-group">
+                        <input type="text" name="searchString" class="form-control" placeholder="Nhập tên SP..."
+                            value="@ViewData["CurrentSearch"]">
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-search"></i></button>
+                    </div>
+                </div>
+
+                <div class="col-md-2 text-end pt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary w-100">Làm mới</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-white fw-bold">
+            <i class="fa-solid fa-list"></i> Chi Tiết Tồn Kho (@Model.Count() mặt hàng)
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="bg-dark text-white">
+                        <tr>
+                            <th class="ps-4">Cửa Hàng</th>
+                            <th>Sản Phẩm</th>
+                            <th>ĐVT</th>
+                            <th class="text-center">Số Lượng</th>
+                            <th class="text-center">Trạng Thái</th>
+                            <th class="text-end pe-4">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-primary">
+                                        <i class="fa-solid fa-store me-1"></i> @item.CuaHang?.TenCuaHang
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(item.SanPham?.HinhAnh))
+                                            {
+                                                <img src="@item.SanPham.HinhAnh" class="rounded border me-2"
+                                                    style="width: 40px; height: 40px; object-fit: cover;" />
+                                            }
+                                            <span class="fw-bold text-dark">@item.SanPham?.TenSanPham</span>
+                                        </div>
+                                    </td>
+                                    <td>@item.SanPham?.DonViTinh</td>
+
+                                    <td class="text-center">
+                                        @if (item.SoLuong == 0)
+                                        {
+                                            <span class="fw-bold text-danger fs-5">0</span>
+                                        }
+                                        else if (item.SoLuong <= 10)
+                                        {
+                                            <span class="fw-bold text-warning fs-5">@item.SoLuong</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-bold text-success fs-5">@item.SoLuong</span>
+                                        }
+                                    </td>
+
+                                    <td class="text-center">
+                                        @if (item.SoLuong == 0)
+                                        {
+                                            <span class="badge bg-danger">Hết hàng</span>
+                                        }
+                                        else if (item.SoLuong <= 10)
+                                        {
+                                            <span class="badge bg-warning text-dark">Sắp hết</span>
+                                        }
+                                        else if (item.SoLuong >= 100)
+                                        {
+                                            <span class="badge bg-info text-dark">Tồn nhiều</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Ổn định</span>
+                                        }
+                                    </td>
+
+                                    <td class="text-end pe-4">
+                                        @if (item.SoLuong <= 10)
+                                        {
+                                            <a asp-controller="PhanPhoi" asp-action="Create" asp-route-cuaHangId="@item.CuaHangID"
+                                                class="btn btn-sm btn-outline-primary shadow-sm">
+                                                <i class="fa-solid fa-truck-fast"></i> Cấp Hàng
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    Không tìm thấy dữ liệu tồn kho nào phù hợp.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

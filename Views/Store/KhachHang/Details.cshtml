@@ -1,0 +1,95 @@
+@model BHX_Web.Models.Entities.KhachHang
+@using BHX_Web.Models.Entities
+
+@{
+    ViewData["Title"] = "Hồ sơ khách hàng";
+    Layout = "~/Views/Shared/_Layout_Store.cshtml";
+    var lichSuMua = ViewBag.LichSuMuaHang as List<HoaDon>;
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h2 class="text-info fw-bold">Hồ Sơ Khách Hàng</h2>
+        <a asp-action="Index" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white fw-bold">
+                    <i class="fa-solid fa-id-card"></i> Thông Tin Cá Nhân
+                </div>
+                <div class="card-body text-center pt-4">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="User" width="100"
+                        class="rounded-circle border mb-3">
+                    <h4 class="fw-bold text-primary">@Model.TenKhachHang</h4>
+                    <p class="text-muted mb-1"><i class="fa-solid fa-phone me-2"></i> @Model.SoDienThoai</p>
+                    <p class="text-muted"><i class="fa-solid fa-location-dot me-2"></i> @(Model.DiaChi ?? "Chưa cập nhật")</p>
+
+                    <hr />
+                    <div class="row text-center mt-3">
+                        <div class="col-12">
+                            <small class="text-muted text-uppercase">Tổng chi tiêu tại cửa hàng</small>
+                            <h3 class="text-danger fw-bold mt-1">@string.Format("{0:N0} đ", ViewBag.TongChiTieu)</h3>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-grid">
+                        <a asp-action="Edit" asp-route-id="@Model.KhachHangID" class="btn btn-outline-primary">
+                            <i class="fa-solid fa-pen-to-square"></i> Cập nhật thông tin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-white fw-bold py-3">
+                    <i class="fa-solid fa-receipt text-success"></i> Lịch Sử Mua Hàng Tại Shop
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-3">Mã HĐ</th>
+                                    <th>Ngày Mua</th>
+                                    <th class="text-end">Tổng Tiền</th>
+                                    <th class="text-center">Chi Tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (lichSuMua != null && lichSuMua.Any())
+                                {
+                                    foreach (var hd in lichSuMua)
+                                    {
+                                        <tr>
+                                            <td class="ps-3 text-muted">#@hd.HoaDonID</td>
+                                            <td>@hd.NgayLap.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td class="text-end fw-bold text-success">@string.Format("{0:N0} đ", hd.TongTien)
+                                            </td>
+                                            <td class="text-center">
+                                                <a asp-controller="HoaDon" asp-action="Details" asp-route-id="@hd.HoaDonID"
+                                                    class="btn btn-sm btn-light border">
+                                                    <i class="fa-solid fa-angle-right"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">Khách chưa mua hàng lần nào tại
+                                            đây.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

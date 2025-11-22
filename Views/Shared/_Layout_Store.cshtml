@@ -1,78 +1,229 @@
 @using System.Security.Claims
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Cửa Hàng BHX</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - Quản Lý Cửa Hàng</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            padding-top: 70px;
+        }
+
+        /* Fix header che nội dung */
+        .navbar-store {
+            background-color: #008848 !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            letter-spacing: 1px;
+            font-size: 1.4rem;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.95) !important;
+            font-weight: 500;
+            transition: 0.2s;
+            padding: 8px 15px !important;
+        }
+
+        .nav-link:hover {
+            color: #fff !important;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+        }
+
+        /* Toast Notification */
+        .alert-floating {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    </style>
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
+
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-success border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-store fixed-top">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="Store" asp-controller="Home" asp-action="Index">BHX - CỬA HÀNG</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+
+                <a class="navbar-brand" asp-area="Store" asp-controller="Home" asp-action="Index">
+                    <i class="fa-solid fa-shop me-2"></i> BHX - STORE
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#storeNavbar"
+                    aria-controls="storeNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <div class="collapse navbar-collapse" id="storeNavbar">
+
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="Store" asp-controller="HoaDon"
-                                asp-action="Create">Bán Hàng</a>
+                            <a class="nav-link" asp-area="Store" asp-controller="BanHang" asp-action="Index">
+                                <i class="fa-solid fa-cash-register me-1"></i> Bán Hàng (POS)
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="Store" asp-controller="KhoCuaHang"
-                                asp-action="Index">QL Kho</a>
+                            <a class="nav-link position-relative" asp-area="Store" asp-controller="DonHang"
+                                asp-action="Index">
+                                <i class="fa-solid fa-earth-americas me-1"></i> Đơn Online
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="Store" asp-controller="NhanHang"
-                                asp-action="Index">Nhận Hàng</a>
+
+                        <li class="nav-item border-start mx-2 d-none d-lg-block"
+                            style="border-color: rgba(255,255,255,0.3)!important;"></li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="khoDropdown" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-boxes-stacked me-1"></i> Kho Hàng
+                            </a>
+                            <ul class="dropdown-menu shadow">
+                                <li><a class="dropdown-item py-2" asp-area="Store" asp-controller="KhoCuaHang"
+                                        asp-action="Index"><i class="fa-solid fa-list-check me-2 text-primary"></i> Xem
+                                        Tồn Kho</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item py-2" asp-area="Store" asp-controller="NhanHang"
+                                        asp-action="Index"><i class="fa-solid fa-truck-ramp-box me-2 text-success"></i>
+                                        Nhận Hàng Từ TCT</a></li>
+                                <li><a class="dropdown-item py-2" asp-area="Store" asp-controller="DeXuatNhap"
+                                        asp-action="Index"><i
+                                            class="fa-solid fa-file-circle-plus me-2 text-warning"></i> Đề Xuất Nhập
+                                        Hàng</a></li>
+                                <li><a class="dropdown-item py-2 text-danger" asp-area="Store" asp-controller="TraHang"
+                                        asp-action="Index"><i class="fa-solid fa-rotate-left me-2"></i> Trả Hàng Lỗi/Hết
+                                        Hạn</a></li>
+                            </ul>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="Store" asp-controller="DeXuatNhap"
-                                asp-action="Index">Đề Xuất Nhập</a>
+                            <a class="nav-link" asp-area="Store" asp-controller="KhachHang" asp-action="Index">
+                                <i class="fa-solid fa-users me-1"></i> Khách Hàng
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="Store" asp-controller="TraHang"
-                                asp-action="Index">Trả Hàng</a>
+                            <a class="nav-link" asp-area="Store" asp-controller="ThongKe" asp-action="Index">
+                                <i class="fa-solid fa-chart-pie me-1"></i> Báo Cáo
+                            </a>
                         </li>
                     </ul>
-                    <ul class="navbar-nav">
+
+                    <ul class="navbar-nav align-items-center">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-light">Xin chào, @User.Claims.FirstOrDefault(c => c.Type ==
-                                                                    "FullName")?.Value</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-warning" asp-area="" asp-controller="Account"
-                                asp-action="Logout">Đăng xuất</a>
-                        </li>
-                                                }
+                            var fullName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.Identity.Name;
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle fw-bold text-white d-flex align-items-center" href="#"
+                                    id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <div class="rounded-circle bg-white text-success d-flex justify-content-center align-items-center me-2"
+                                        style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                    @fullName
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow mt-2">
+                                    <li>
+                                        <h6 class="dropdown-header text-uppercase small fw-bold">Tài khoản</h6>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#"><i class="fa-solid fa-id-card me-2"></i> Hồ sơ cá
+                                            nhân</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fa-solid fa-key me-2"></i> Đổi mật
+                                            khẩu</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <form class="d-inline" asp-area="" asp-controller="Account" asp-action="Logout"
+                                            method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item text-danger fw-bold">
+                                                <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
                     </ul>
+
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <div class="container-fluid py-4">
+        <main role="main">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show alert-floating" role="alert">
+                    <i class="fa-solid fa-circle-check me-2 fa-lg"></i> <strong>Thành công!</strong><br>
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show alert-floating" role="alert">
+                    <i class="fa-solid fa-circle-exclamation me-2 fa-lg"></i> <strong>Lỗi!</strong><br>
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["WarningMessage"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show alert-floating" role="alert">
+                    <i class="fa-solid fa-triangle-exclamation me-2 fa-lg"></i> <strong>Chú ý!</strong><br>
+                    @TempData["WarningMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - BHX_Web - Store
+    <footer class="border-top footer text-muted mt-auto py-3 bg-white">
+        <div class="container-fluid text-center small">
+            &copy; 2025 - Hệ thống quản lý Bách Hóa Xanh - Phân hệ Cửa Hàng
         </div>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        setTimeout(function () {
+            $('.alert-floating').fadeOut('slow');
+        }, 5000);
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 

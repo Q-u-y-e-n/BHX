@@ -1,0 +1,102 @@
+@{
+    ViewData["Title"] = "Tổng Hợp Doanh Thu";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+    var reportList = ViewBag.ReportList as IEnumerable<dynamic>;
+}
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4 text-primary fw-bold"><i class="fa-solid fa-chart-pie"></i> Báo Cáo Doanh Thu Hệ Thống</h2>
+
+    <div class="card shadow-sm mt-3 mb-4 bg-light">
+        <div class="card-body py-3">
+            <form asp-action="Index" method="get" class="d-flex align-items-center gap-2" style="max-width: 400px;">
+                <label class="fw-bold">Tháng:</label>
+                <input type="number" name="thang" value="@ViewBag.Thang" class="form-control text-center" min="1"
+                    max="12">
+
+                <label class="fw-bold">Năm:</label>
+                <input type="number" name="nam" value="@ViewBag.Nam" class="form-control text-center">
+
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Xem</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow h-100">
+                <div class="card-body text-center">
+                    <div class="text-uppercase small fw-bold opacity-75">Tổng Doanh Thu</div>
+                    <div class="display-6 fw-bold">@string.Format("{0:N0} đ", ViewBag.TongDoanhThuHeThong)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white shadow h-100">
+                <div class="card-body text-center">
+                    <div class="text-uppercase small fw-bold opacity-75">Tổng Thất Thoát (Hủy)</div>
+                    <div class="display-6 fw-bold">@string.Format("{0:N0} đ", ViewBag.TongThatThoatHeThong)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-primary text-white shadow h-100">
+                <div class="card-body text-center">
+                    <div class="text-uppercase small fw-bold opacity-75">Lợi Nhuận Ròng (Ước tính)</div>
+                    <div class="display-6 fw-bold">@string.Format("{0:N0} đ", ViewBag.LoiNhuanUocTinh)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-5">
+        <div class="card-header bg-white py-3 fw-bold text-uppercase">
+            <i class="fa-solid fa-store text-info me-2"></i> Tình hình kinh doanh các chi nhánh
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4">Tên Cửa Hàng</th>
+                        <th class="text-end">Doanh Thu</th>
+                        <th class="text-end">Thất Thoát</th>
+                        <th class="text-end pe-4">Lợi Nhuận</th>
+                        <th class="text-center">Trạng Thái</th>
+                        <th class="text-center">Chi Tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (reportList != null)
+                    {
+                        foreach (var item in reportList)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark">@item.TenCuaHang</td>
+                                <td class="text-end text-success fw-bold">@string.Format("{0:N0}", item.DoanhThu)</td>
+                                <td class="text-end text-danger">@string.Format("{0:N0}", item.ThatThoat)</td>
+                                <td class="text-end pe-4 fw-bold text-primary">@string.Format("{0:N0}", item.LoiNhuan)</td>
+                                <td class="text-center">
+                                    @if (item.TrangThaiBaoCao == "Đã báo cáo")
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success">Đã gửi báo
+                                            cáo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary border">Chưa có dữ liệu</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="Details" asp-route-id="@item.CuaHangID" asp-route-thang="@ViewBag.Thang"
+                                        asp-route-nam="@ViewBag.Nam" class="btn btn-sm btn-outline-info">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

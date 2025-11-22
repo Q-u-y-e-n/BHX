@@ -29,10 +29,9 @@ namespace BHX_Web.Controllers.Admin
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                // FIX LỖI CS8602: Kiểm tra k.SanPham != null trước khi truy cập
-                query = query.Where(k => k.SanPham != null &&
-                                       ((k.SanPham.TenSanPham != null && k.SanPham.TenSanPham.Contains(searchString))
-                                     || (k.SanPham.LoaiSanPham != null && k.SanPham.LoaiSanPham.Contains(searchString))));
+                // Tìm kiếm an toàn (tránh null)
+                query = query.Where(k => (k.SanPham.TenSanPham != null && k.SanPham.TenSanPham.Contains(searchString))
+                                      || (k.SanPham.LoaiSanPham != null && k.SanPham.LoaiSanPham.Contains(searchString)));
             }
 
             ViewData["CurrentFilter"] = searchString;
@@ -40,7 +39,7 @@ namespace BHX_Web.Controllers.Admin
         }
 
         // =========================================================
-        // 2. THÊM MỚI (CREATE)
+        // 2. TẠO MỚI (GET)
         // =========================================================
         [HttpGet]
         public IActionResult Create()
@@ -48,6 +47,9 @@ namespace BHX_Web.Controllers.Admin
             return View(new SanPhamViewModel { SoLuong = 0 });
         }
 
+        // =========================================================
+        // 3. TẠO MỚI (POST)
+        // =========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(SanPhamViewModel model)
@@ -56,21 +58,29 @@ namespace BHX_Web.Controllers.Admin
             {
                 string? imagePath = null;
 
+                // 1. Xử lý Upload Ảnh
                 if (model.HinhAnhFile != null)
                 {
+                    // Lưu vào thư mục wwwroot/images/products để gọn gàng
                     string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+
+                    // Tự động tạo thư mục nếu chưa có
                     if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
+                    // Tạo tên file độc nhất
                     string uniqueFileName = Guid.NewGuid().ToString() + "_" + model.HinhAnhFile.FileName;
                     string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
+                    // Dùng 'using' để đóng file ngay sau khi copy xong (Tránh lỗi file đang được sử dụng)
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await model.HinhAnhFile.CopyToAsync(fileStream);
                     }
+
                     imagePath = "/images/products/" + uniqueFileName;
                 }
 
+                // 2. Transaction lưu Database
                 using (var transaction = await _context.Database.BeginTransactionAsync())
                 {
                     try
@@ -104,6 +114,17 @@ namespace BHX_Web.Controllers.Admin
                     {
                         await transaction.RollbackAsync();
                         ModelState.AddModelError("", "Lỗi: " + ex.Message);
+
+                        // Xóa ảnh rác nếu lưu DB thất bại
+                        if (imagePath != null)
+                        {
+                            try
+                            {
+                                string physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, imagePath.TrimStart('/'));
+                                if (System.IO.File.Exists(physicalPath)) System.IO.File.Delete(physicalPath);
+                            }
+                            catch { /* Bỏ qua lỗi xóa file */ }
+                        }
                     }
                 }
             }
@@ -111,7 +132,7 @@ namespace BHX_Web.Controllers.Admin
         }
 
         // =========================================================
-        // 3. CHỈNH SỬA (EDIT)
+        // 4. CHỈNH SỬA (GET)
         // =========================================================
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
@@ -119,16 +140,13 @@ namespace BHX_Web.Controllers.Admin
             if (id == null) return NotFound();
 
             var khoTong = await _context.KhoTongs.Include(k => k.SanPham).FirstOrDefaultAsync(k => k.KhoTongID == id);
-
-            // Kiểm tra kỹ null ở đây
             if (khoTong == null || khoTong.SanPham == null) return NotFound();
 
-            // FIX LỖI CS8601: Dùng toán tử ?? "" để đảm bảo không gán null vào chuỗi không được null
             var model = new SanPhamViewModel
             {
                 SanPhamID = khoTong.SanPham.SanPhamID,
-                TenSanPham = khoTong.SanPham.TenSanPham ?? "", // Nếu null thì lấy chuỗi rỗng
-                DonViTinh = khoTong.SanPham.DonViTinh ?? "",
+                TenSanPham = khoTong.SanPham.TenSanPham,
+                DonViTinh = khoTong.SanPham.DonViTinh,
                 GiaNhap = khoTong.SanPham.GiaNhap,
                 GiaBan = khoTong.SanPham.GiaBan,
                 LoaiSanPham = khoTong.SanPham.LoaiSanPham,
@@ -140,6 +158,9 @@ namespace BHX_Web.Controllers.Admin
             return View(model);
         }
 
+        // =========================================================
+        // 5. CHỈNH SỬA (POST) - FIX LỖI IO EXCEPTION
+        // =========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, SanPhamViewModel model)
@@ -151,6 +172,7 @@ namespace BHX_Web.Controllers.Admin
 
                 if (sanPham == null || khoTong == null) return NotFound();
 
+                // 1. Xử lý ảnh mới (nếu có upload)
                 if (model.HinhAnhFile != null)
                 {
                     string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
@@ -159,27 +181,51 @@ namespace BHX_Web.Controllers.Admin
                     string uniqueFileName = Guid.NewGuid().ToString() + "_" + model.HinhAnhFile.FileName;
                     string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
+                    // Lưu file mới
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await model.HinhAnhFile.CopyToAsync(fileStream);
                     }
 
-                    // Xóa ảnh cũ để tránh rác
+                    // [FIX LỖI QUAN TRỌNG]: Xóa ảnh cũ an toàn
                     if (!string.IsNullOrEmpty(sanPham.HinhAnh))
                     {
-                        string oldPath = Path.Combine(_webHostEnvironment.WebRootPath, sanPham.HinhAnh.TrimStart('/'));
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                        try
+                        {
+                            // Lấy đường dẫn vật lý cũ
+                            string oldPath = Path.Combine(_webHostEnvironment.WebRootPath, sanPham.HinhAnh.TrimStart('/', '\\'));
+
+                            // Kiểm tra file có tồn tại không
+                            if (System.IO.File.Exists(oldPath))
+                            {
+                                // Cố gắng xóa
+                                System.IO.File.Delete(oldPath);
+                            }
+                        }
+                        catch (IOException)
+                        {
+                            // NẾU FILE ĐANG BỊ KHÓA: Bỏ qua việc xóa, không làm sập web.
+                            // File cũ sẽ thành file rác, ta có thể dọn dẹp thủ công sau.
+                            Console.WriteLine("File đang được sử dụng, không thể xóa: " + sanPham.HinhAnh);
+                        }
+                        catch (Exception)
+                        {
+                            // Bỏ qua các lỗi khác
+                        }
                     }
 
+                    // Cập nhật đường dẫn ảnh mới
                     sanPham.HinhAnh = "/images/products/" + uniqueFileName;
                 }
 
+                // 2. Cập nhật thông tin
                 sanPham.TenSanPham = model.TenSanPham;
                 sanPham.DonViTinh = model.DonViTinh;
                 sanPham.GiaNhap = model.GiaNhap;
                 sanPham.GiaBan = model.GiaBan;
                 sanPham.LoaiSanPham = model.LoaiSanPham;
 
+                // 3. Cập nhật kho
                 khoTong.SoLuong = model.SoLuong;
                 khoTong.NgayCapNhat = DateTime.Now;
 
@@ -201,7 +247,7 @@ namespace BHX_Web.Controllers.Admin
         }
 
         // =========================================================
-        // 4. XÓA (DELETE)
+        // 6. XÓA (DELETE)
         // =========================================================
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
@@ -216,10 +262,15 @@ namespace BHX_Web.Controllers.Admin
                 _context.KhoTongs.Remove(khoTong);
                 if (sanPham != null)
                 {
+                    // Xóa ảnh vật lý an toàn
                     if (!string.IsNullOrEmpty(sanPham.HinhAnh))
                     {
-                        string path = Path.Combine(_webHostEnvironment.WebRootPath, sanPham.HinhAnh.TrimStart('/'));
-                        if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+                        try
+                        {
+                            string path = Path.Combine(_webHostEnvironment.WebRootPath, sanPham.HinhAnh.TrimStart('/', '\\'));
+                            if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+                        }
+                        catch { /* Bỏ qua lỗi nếu không xóa được file */ }
                     }
                     _context.SanPhams.Remove(sanPham);
                 }
@@ -229,7 +280,7 @@ namespace BHX_Web.Controllers.Admin
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] = "Không thể xóa do sản phẩm đã có giao dịch.";
+                TempData["ErrorMessage"] = "Không thể xóa do sản phẩm đã có giao dịch. Hãy chỉnh số lượng về 0.";
             }
 
             return RedirectToAction(nameof(Index));

@@ -1,0 +1,53 @@
+@model BHX_Web.Models.Entities.KhachHang
+
+@{
+    ViewData["Title"] = "Thêm Khách Hàng Mới";
+    Layout = "~/Views/Shared/_Layout_Store.cshtml";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow border-0">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0 fw-bold"><i class="fa-solid fa-user-plus"></i> Thêm Khách Hàng Mới</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Họ và Tên <span class="text-danger">*</span></label>
+                        <input asp-for="TenKhachHang" class="form-control" placeholder="VD: Nguyễn Văn A" required />
+                        <span asp-validation-for="TenKhachHang" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số Điện Thoại <span class="text-danger">*</span></label>
+                        <input asp-for="SoDienThoai" class="form-control" placeholder="VD: 0901234567" required />
+                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Địa Chỉ</label>
+                        <textarea asp-for="DiaChi" class="form-control" rows="3"
+                            placeholder="Nhập địa chỉ liên hệ..."></textarea>
+                        <span asp-validation-for="DiaChi" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a asp-action="Index" class="btn btn-secondary me-2">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-success px-4 fw-bold">
+                            <i class="fa-solid fa-save"></i> Lưu Hồ Sơ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

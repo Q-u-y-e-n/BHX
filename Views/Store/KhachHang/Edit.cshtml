@@ -1,0 +1,51 @@
+@model BHX_Web.Models.Entities.KhachHang
+
+@{
+    ViewData["Title"] = "Cập nhật khách hàng";
+    Layout = "~/Views/Shared/_Layout_Store.cshtml";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark fw-bold">
+                <i class="fa-solid fa-user-pen"></i> Cập Nhật Thông Tin Khách Hàng
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit">
+                    <input type="hidden" asp-for="KhachHangID" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Họ và Tên <span class="text-danger">*</span></label>
+                        <input asp-for="TenKhachHang" class="form-control" required />
+                        <span asp-validation-for="TenKhachHang" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số Điện Thoại <span class="text-danger">*</span></label>
+                        <input asp-for="SoDienThoai" class="form-control" required />
+                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Địa Chỉ</label>
+                        <textarea asp-for="DiaChi" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary px-4">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

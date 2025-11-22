@@ -8,7 +8,7 @@ namespace BHX_Web.Data
         public BHXContext(DbContextOptions<BHXContext> options) : base(options) { }
 
         // ===========================================================
-        // 1. DANH SÁCH BẢNG NGHIỆP VỤ (Dùng để truy vấn LINQ)
+        // 1. DANH SÁCH BẢNG NGHIỆP VỤ (DbSet)
         // ===========================================================
 
         // --- Quản lý chung ---
@@ -36,15 +36,15 @@ namespace BHX_Web.Data
         public DbSet<DanhSachTraHang> DanhSachTraHangs { get; set; }
         public DbSet<ChiTietTraHang> ChiTietTraHangs { get; set; }
 
-        // --- Bán Hàng ---
+        // --- Bán Hàng Tại Quầy (POS) ---
         public DbSet<KhachHang> KhachHangs { get; set; }
         public DbSet<HoaDon> HoaDons { get; set; }
         public DbSet<ChiTietHoaDon> ChiTietHoaDons { get; set; }
         public DbSet<BanHang_TongHop> BanHang_TongHops { get; set; }
 
-        // --- Khách Hàng Online (Mới bổ sung) ---
-        public DbSet<GioHang> GioHangs { get; set; } // <--- QUAN TRỌNG: Bảng Giỏ Hàng
-        public DbSet<DonHang> DonHangs { get; set; }
+        // --- Khách Hàng Online (Ecommerce) ---
+        public DbSet<GioHang> GioHangs { get; set; } // <--- QUAN TRỌNG: Giỏ hàng lưu trữ
+        public DbSet<DonHang> DonHangs { get; set; } // Đơn online
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
 
         // --- Xử lý hàng lỗi ---
@@ -59,13 +59,13 @@ namespace BHX_Web.Data
         public DbSet<UserRoles> UserRoles { get; set; }
 
         // ===========================================================
-        // 3. CẤU HÌNH FLUENT API (Thiết lập ràng buộc)
+        // 3. CẤU HÌNH FLUENT API
         // ===========================================================
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // ----- Mapping Tên Bảng (Để khớp với SQL Server) -----
+            // ----- Mapping Tên Bảng (Khớp với SQL Server) -----
             modelBuilder.Entity<PhieuNhap_Tong>().ToTable("PhieuNhap_Tong");
             modelBuilder.Entity<ChiTietNhap_Tong>().ToTable("ChiTietNhap_Tong");
             modelBuilder.Entity<BanHang_TongHop>().ToTable("BanHang_TongHop");
@@ -80,15 +80,18 @@ namespace BHX_Web.Data
             modelBuilder.Entity<ChiTietTraHang>().ToTable("ChiTietTraHang");
             modelBuilder.Entity<ChiTietPhanPhoi>().ToTable("ChiTietPhanPhoi");
             modelBuilder.Entity<ChiTietHoaDon>().ToTable("ChiTietHoaDon");
+
+            // Mapping cho Online
+            modelBuilder.Entity<GioHang>().ToTable("GioHang");
+            modelBuilder.Entity<DonHang>().ToTable("DonHang");
             modelBuilder.Entity<ChiTietDonHang>().ToTable("ChiTietDonHang");
 
-            modelBuilder.Entity<GioHang>().ToTable("GioHang"); // <--- Mapping bảng Giỏ Hàng
-
+            // Mapping User
             modelBuilder.Entity<Users>().ToTable("Users");
             modelBuilder.Entity<Roles>().ToTable("Roles");
             modelBuilder.Entity<UserRoles>().ToTable("UserRoles");
 
-            // ----- Ràng buộc Unique (Duy nhất) -----
+            // ----- Ràng buộc Unique -----
             modelBuilder.Entity<Users>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
@@ -97,7 +100,7 @@ namespace BHX_Web.Data
                 .HasIndex(r => r.RoleName)
                 .IsUnique();
 
-            // ----- Quan hệ nhiều - nhiều (UserRoles) -----
+            // ----- Quan hệ User - Role (Nhiều - Nhiều) -----
             modelBuilder.Entity<UserRoles>()
                 .HasKey(ur => ur.UserRoleID);
 

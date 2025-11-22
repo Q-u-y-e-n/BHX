@@ -1,0 +1,119 @@
+@model BHX_Web.Models.Entities.DonHang
+
+@{
+    ViewData["Title"] = "Xử lý đơn hàng";
+    Layout = "~/Views/Shared/_Layout_Store.cshtml";
+    decimal tongTien = 0;
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h2 class="text-success fw-bold">Xử Lý Đơn Hàng #@Model.DonHangID</h2>
+        <a asp-action="Index" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white fw-bold py-3">
+                    <i class="fa-solid fa-clipboard-list text-primary"></i> Danh Sách Sản Phẩm Cần Soạn
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Sản Phẩm</th>
+                                <th class="text-center">SL</th>
+                                <th class="text-end">Đơn Giá</th>
+                                <th class="text-end pe-4">Thành Tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ChiTietDonHangs)
+                            {
+                                var thanhTien = item.SoLuong * item.DonGia;
+                                tongTien += thanhTien;
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(item.SanPham?.HinhAnh))
+                                            {
+                                                <img src="@item.SanPham.HinhAnh" class="rounded border me-2"
+                                                    style="width: 40px; height: 40px; object-fit: cover;" />
+                                            }
+                                            <span class="fw-bold">@item.SanPham?.TenSanPham</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center fw-bold fs-5 text-primary">@item.SoLuong</td>
+                                    <td class="text-end">@string.Format("{0:N0}", item.DonGia)</td>
+                                    <td class="text-end pe-4 fw-bold">@string.Format("{0:N0}", thanhTien)</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="bg-white">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold pt-3 fs-5">TỔNG CỘNG CẦN THU:</td>
+                                <td class="text-end fw-bold text-danger fs-4 pe-4 pt-3">@string.Format("{0:N0} đ",
+                                                                        tongTien)</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow mb-3">
+                <div class="card-header bg-info text-white fw-bold">
+                    <i class="fa-solid fa-user"></i> Thông Tin Giao Hàng
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Người nhận:</strong> @Model.KhachHang?.TenKhachHang</p>
+                    <p class="mb-2"><strong>SĐT:</strong> <a href="tel:@Model.KhachHang?.SoDienThoai"
+                            class="fw-bold text-decoration-none">@Model.KhachHang?.SoDienThoai</a></p>
+                    <p class="mb-0"><strong>Địa chỉ:</strong> @(Model.KhachHang?.DiaChi ?? "Nhận tại cửa hàng")</p>
+                </div>
+            </div>
+
+            <div class="card shadow border-warning">
+                <div class="card-header bg-warning text-dark fw-bold">
+                    <i class="fa-solid fa-gear"></i> Cập Nhật Trạng Thái
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        Trạng thái hiện tại:
+                        <span class="badge bg-dark fs-6">@Model.TrangThai</span>
+                    </div>
+
+                    <form asp-action="UpdateStatus" method="post">
+                        <input type="hidden" name="id" value="@Model.DonHangID" />
+
+                        @if (Model.TrangThai == "Chờ xác nhận")
+                        {
+                            <p class="text-muted small">Đã soạn xong hàng? Bấm nút dưới để giao cho shipper.</p>
+                            <button type="submit" name="trangThai" value="Đang giao"
+                                class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                                <i class="fa-solid fa-truck-fast"></i> BẮT ĐẦU GIAO HÀNG
+                            </button>
+                        }
+                        else if (Model.TrangThai == "Đang giao")
+                        {
+                            <p class="text-muted small">Khách đã nhận và thanh toán? Bấm nút dưới để hoàn tất.</p>
+                            <button type="submit" name="trangThai" value="Hoàn thành"
+                                class="btn btn-success w-100 py-2 fw-bold shadow-sm"
+                                onclick="return confirm('Xác nhận đã thu đủ tiền?');">
+                                <i class="fa-solid fa-check-circle"></i> HOÀN THÀNH ĐƠN
+                            </button>
+                        }
+                        else
+                        {
+                            <div class="alert alert-success mb-0">
+                                <i class="fa-solid fa-check"></i> Đơn hàng đã hoàn tất thành công.
+                            </div>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

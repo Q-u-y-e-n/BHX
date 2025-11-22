@@ -1,0 +1,79 @@
+@model BHX_Web.Models.Entities.DonHang
+
+@{
+    ViewData["Title"] = "Chi Tiết Đơn Hàng #" + Model.DonHangID;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    decimal tongTien = 0;
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-success fw-bold mb-0">Đơn Hàng #@Model.DonHangID</h3>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white fw-bold py-3">Thông Tin Đơn Hàng</div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Ngày đặt:</strong> @Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p class="mb-2"><strong>Trạng thái:</strong> <span
+                            class="text-primary fw-bold">@Model.TrangThai</span></p>
+                    <hr>
+                    <p class="mb-1 small text-muted">Người nhận:</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-bold py-3">Danh Sách Sản Phẩm</div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Sản Phẩm</th>
+                                <th class="text-center">Giá</th>
+                                <th class="text-center">SL</th>
+                                <th class="text-end pe-4">Thành Tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ChiTietDonHangs)
+                            {
+                                var thanhTien = item.SoLuong * item.DonGia;
+                                tongTien += thanhTien;
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(item.SanPham?.HinhAnh))
+                                            {
+                                                <img src="@item.SanPham.HinhAnh" class="rounded border me-2"
+                                                    style="width: 50px; height: 50px; object-fit: cover;">
+                                            }
+                                            <div>
+                                                <div class="fw-bold text-dark">@item.SanPham?.TenSanPham</div>
+                                                <small class="text-muted">@item.SanPham?.DonViTinh</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">@string.Format("{0:N0}₫", item.DonGia)</td>
+                                    <td class="text-center fw-bold">x @item.SoLuong</td>
+                                    <td class="text-end pe-4 fw-bold text-primary">@string.Format("{0:N0}₫", thanhTien)</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="bg-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold pt-3">TỔNG CỘNG:</td>
+                                <td class="text-end fw-bold fs-4 text-danger pe-4 pt-3">@string.Format("{0:N0}₫",
+                                                                        tongTien)</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
